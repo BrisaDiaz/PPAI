@@ -62,7 +62,7 @@ public class Estado {
         return nombreEstado.equals("Fuera de Servicio");
     }
     public boolean esOnline() {
-        return nombreEstado.equals("On-line");
+        return nombreEstado.equals("Online");
     }
 
     // Simulación de persistencia

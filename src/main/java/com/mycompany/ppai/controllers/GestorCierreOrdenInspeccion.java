@@ -9,7 +9,7 @@ import com.mycompany.ppai.entities.Sismografo;
 
 import com.mycompany.ppai.boundaries.InterfazNotificacion;
 import com.mycompany.ppai.boundaries.MonitorCCRS;
-import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion; // Import Pantalla
+import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -47,7 +47,6 @@ public class GestorCierreOrdenInspeccion {
         this.obtenerRILogeado();
         List<JsonObject> infoOrdenesInspeccion = this.mostrarInfoOrdenesInspeccion();
         this.pantallaCierreOrdenInspeccion.mostrarInfoOrdenesInspeccion(infoOrdenesInspeccion);
-        this.pantallaCierreOrdenInspeccion.solicitarOpcionPonerSismografoFueraDeServicio(); // Ask the user
     }
 
     public void obtenerRILogeado() {
@@ -144,6 +143,7 @@ public class GestorCierreOrdenInspeccion {
                 finCU();
             }
         } else {
+            // Método para cancelar el cierre de la orden de inspección (A7)
             this.pantallaCierreOrdenInspeccion.mostrarMensaje("Cierre de orden cancelado.");
             finCU();
         }
@@ -244,18 +244,10 @@ public class GestorCierreOrdenInspeccion {
     }
 
     public void finCU() {
+        nuevoCierreOrdenInspeccion();
         System.out.println("--------------------------------------------------");
         System.out.println("Fin del caso de uso: Cierre de Orden de Inspección");
         System.out.println("--------------------------------------------------");
     }
 
-    // Método para cancelar el cierre de la orden de inspección (A7)
-    public void cancelarCierreOrden() {
-        this.pantallaCierreOrdenInspeccion.mostrarMensaje("El cierre de la orden de inspección ha sido cancelado por el usuario.");
-        finCU();
-        this.selectOrdenDeInspeccion = null;
-        this.observacionCierreOrden = null;
-        this.motivosFueraServicio.clear();
-        this.ponerSismografoFueraServicio = false;
-    }
 }
