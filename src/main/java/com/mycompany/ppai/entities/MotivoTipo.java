@@ -1,14 +1,16 @@
 package com.mycompany.ppai.entities;
  
 
+import java.util.ArrayList;
+import java.util.List;
  import java.util.Objects;
  
 
  public class MotivoTipo {
-  private String descripcion;
+ private String descripcion;
 
   // Simulación de persistencia
-    private static final List<MotivoTipo> todosMotivosTipoFueraServicio = new ArrayList<>();
+  private static final List<MotivoTipo> todosMotivosTipoFueraServicio = new ArrayList<>();
  
   // Constructor 
   public MotivoTipo(String descripcion) {
@@ -32,10 +34,10 @@ package com.mycompany.ppai.entities;
         return todosMotivosTipoFueraServicio;
     }
     public static void agregarMotivoTipoFueraServicio(MotivoTipo motivoTipo) {
-        this.todosMotivosTipoFueraServicio.add(Objects.requireNonNull(motivoTipo, "El motivo tipo no puede ser nulo"));
+        todosMotivosTipoFueraServicio.add(Objects.requireNonNull(motivoTipo, "El motivo tipo no puede ser nulo"));
     }
 
-    public static void obtenerMotivoTipoPorDescripcion(String descripcion) {
+    public static MotivoTipo obtenerMotivoTipoPorDescripcion(String descripcion) {
         for (MotivoTipo motivoTipo : todosMotivosTipoFueraServicio) {
             if (motivoTipo.getDescripcion().equalsIgnoreCase(descripcion)) {
                 return motivoTipo;

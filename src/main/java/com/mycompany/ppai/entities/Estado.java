@@ -1,5 +1,7 @@
 package com.mycompany.ppai.entities;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects; // Importar Objects para usar requireNonNull
 
 public class Estado {

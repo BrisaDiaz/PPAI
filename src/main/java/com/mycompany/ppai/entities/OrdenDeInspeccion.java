@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.List;
 import com.google.gson.JsonObject; // Import Gson's JsonObject
+import java.util.ArrayList;
 
 public class OrdenDeInspeccion {
 
@@ -18,7 +19,7 @@ public class OrdenDeInspeccion {
 
     // Simulación de persistencia
 
-    private static final todasLasOrdenesDeInspeccion = new ArrayList<OrdenDeInspeccion>();
+    private static final List<OrdenDeInspeccion> todasLasOrdenesDeInspeccion = new ArrayList<OrdenDeInspeccion>();
 
     // Constructor
     public OrdenDeInspeccion(LocalDateTime fechaHoraInicio, Integer numeroOrden, Estado estado, Empleado empleado, EstacionSismologica estacionSismologica) {
@@ -111,7 +112,7 @@ public class OrdenDeInspeccion {
         return this.estado.esCompletamenteRealizada();
     }
 
-    public JsonObject mostrarDatosOrdenesDeInspeccion(List<Sismografo> sismografos) { 
+    public JsonObject mostrarDatosOrdeneDeInspeccion(List<Sismografo> sismografos) { 
         JsonObject datos = new JsonObject();
         datos.addProperty("numeroOrden", this.getNumeroOrden());
 

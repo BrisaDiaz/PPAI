@@ -6,7 +6,10 @@ package com.mycompany.ppai.controllers;
  import com.mycompany.ppai.entities.Sesion;
  import com.mycompany.ppai.entities.MotivoTipo;
  import com.mycompany.ppai.entities.Estado;
- 
+ import com.mycompany.ppai.entities.Sismografo;
+
+ import com.mycompany.ppai.boundaries.InterfazNotificacion;
+ import com.mycompany.ppai.boundaries.MonitorCCRS;
 
  import java.time.LocalDateTime;
  import java.util.Objects;
@@ -21,14 +24,14 @@ package com.mycompany.ppai.controllers;
   private String observacionCierreOrden;
   private PantallaCierreOrdenInspeccion pantallaCierreOrdenInspeccion;
   private InterfazNotificacion interfazNotificacion;
-  private List<PantallaCCRS> pantallasCCRS;
+  private List<MonitorCCRS> pantallasCCRS;
   private Sesion sesionActual;
   private Empleado empleadoLogeado;
   private List<Object[]> motivosFueraServicio; 
 
   // Constructor
   public GestorCierreOrdenInspeccion(Sesion sesionActual, PantallaCierreOrdenInspeccion pantallaCierreOrdenInspeccion,
-  InterfazNotificacion interfazNotificacion, List<PantallaCCRS> pantallasCCRS) {
+  InterfazNotificacion interfazNotificacion, List<MonitorCCRS> pantallasCCRS) {
   this.pantallaCierreOrdenInspeccion = Objects.requireNonNull(pantallaCierreOrdenInspeccion,
   "La pantalla de cierre de orden de inspección no puede ser nula");
   this.interfazNotificacion = Objects.requireNonNull(interfazNotificacion, "La interfaz de notificación no puede ser nula");
@@ -52,12 +55,14 @@ package com.mycompany.ppai.controllers;
   }
  
   public List<JsonObject> mostrarInfoOrdenesInspeccion() {
-  List<OrdenDeInspeccion> ordenes = OrdenDeInspeccion.getTodasLasOrdenesDeInspeccion();
+  List<OrdenDeInspeccion> ordenes = OrdenDeInspeccion.obtenerTodasOrdenesDeInspeccion();
+  List<Sismografo> todosLosSismografos = Sismografo.obtenerTodosSismografos();
+
   List<JsonObject> ordenesFiltradas = new ArrayList<>();
  
   for (OrdenDeInspeccion orden : ordenes) {
-  if (orden.esCompletamenteRealizada() && orden.esMiRI(this.empleadoLogeado)) {
-  ordenesFiltradas.add(orden.mostrarDatosOrdenesDeInspeccion());
+  if (orden.estoyCompletamenteRealizada() && orden.esMiRI(this.empleadoLogeado)) {
+  ordenesFiltradas.add(orden.mostrarDatosOrdeneDeInspeccion(todosLosSismografos));
   }
   }
 
@@ -129,7 +134,8 @@ package com.mycompany.ppai.controllers;
   public void cerrarOrdenDeInspeccion() {
   this.fechaHoraActual = LocalDateTime.now();
   List<Estado> todosLosEstados = Estado.obtenerTodosLosEstados();
- 
+  List<Sismografo> todosLosSismografos = Sismografo.obtenerTodosSismografos();
+
 
   Estado estadoCerrada = null;
   for (Estado estado : todosLosEstados) {
@@ -141,23 +147,23 @@ package com.mycompany.ppai.controllers;
   this.selectOrdenDeInspeccion.cerrar(estadoCerrada, this.observacionCierreOrden, this.fechaHoraActual);
 
   Estado estadoFueraServicio = null;
-  String nombreEstadoFueraServicio;
+  String nombreEstadoFueraServicio = "";
 
   for (Estado estado : todosLosEstados) {
   if (estado.esAmbitoSismografo() && estado.esFueraDeServicio()) {
   estadoFueraServicio = estado;
-  nombreEstadoFueraServicio = estado.getNombre();
+  nombreEstadoFueraServicio = estado.getNombreEstado();
   break;
   }
   }
 
   this.selectOrdenDeInspeccion.actualizarSismografoFueraServicio(this.fechaHoraActual, this.empleadoLogeado,
-  estadoFueraServicio, this.motivosFueraServicio);
+  estadoFueraServicio, this.motivosFueraServicio, todosLosSismografos);
 
   String cuerpoNotificacion = "Se ha cerrado la orden de inspección número "
   + this.selectOrdenDeInspeccion.getNumeroOrden()
   + " con el sismógrafo (Identificador: "
-  + this.selectOrdenDeInspeccion.mostrarInfoOrdenesInspeccion().get("identificadorSismografo").getAsString()
+  + this.selectOrdenDeInspeccion.mostrarDatosOrdeneDeInspeccion(todosLosSismografos).get("identificadorSismografo").getAsString()
   + ") en estado " + nombreEstadoFueraServicio
   + " desde " + this.fechaHoraActual
   + ". Motivos: " + this.obtenerDescripcionMotivos();
@@ -195,7 +201,7 @@ package com.mycompany.ppai.controllers;
  
 
   public void publicarEnMonitoresCCRS(String cuerpoNotificacion) {
-  for (PantallaCCRS pantalla : pantallasCCRS) {
+  for (MonitorCCRS pantalla : pantallasCCRS) {
   pantalla.publicar(cuerpoNotificacion);
   }
   }

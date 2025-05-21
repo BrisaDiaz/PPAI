@@ -1,5 +1,7 @@
 package com.mycompany.ppai.entities;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Empleado {
@@ -34,7 +36,7 @@ public class Empleado {
         return telefono;
     }
 
-    public String getMail() { // Changed obtenerMail() to getMail() for consistency
+    public String obtenerMail() {
         return mail;
     }
 
