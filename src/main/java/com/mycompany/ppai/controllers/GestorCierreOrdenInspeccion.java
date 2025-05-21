@@ -47,6 +47,7 @@ public class GestorCierreOrdenInspeccion {
         this.obtenerRILogeado();
         List<JsonObject> infoOrdenesInspeccion = this.mostrarInfoOrdenesInspeccion();
         this.pantallaCierreOrdenInspeccion.mostrarInfoOrdenesInspeccion(infoOrdenesInspeccion);
+        this.pantallaCierreOrdenInspeccion.solicitarOpcionPonerSismografoFueraDeServicio(); // Ask the user
     }
 
     public void obtenerRILogeado() {
