@@ -111,4 +111,16 @@ public class EstacionSismologica {
         }
 
     }
+
+    public void actualizarSismografoOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
+    Estado estadoOnline, List<Sismografo> sismografos) {
+
+        for (Sismografo sismografo : sismografos) {
+            if (sismografo.esMiEstacion(this)) {
+                sismografo.ponerOnline(fechaHoraActual, responsableDeInspeccion, estadoOnline);
+                
+                break;
+            }
+        }
+    }
 }

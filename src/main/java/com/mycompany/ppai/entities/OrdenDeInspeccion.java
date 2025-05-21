@@ -141,6 +141,11 @@ public class OrdenDeInspeccion {
 
     }
 
+    public void actualizarSismografoOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
+    Estado estadoOnline, List<Sismografo> sismografos) {
+        this.estacionSismologica.actualizarSismografoOnline(fechaHoraActual, responsableDeInspeccion, estadoOnline, sismografos);
+    }
+
     // Simulación de persistencia
     public static List<OrdenDeInspeccion> obtenerTodasOrdenesDeInspeccion() {
         return todasLasOrdenesDeInspeccion;

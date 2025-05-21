@@ -116,6 +116,12 @@ package com.mycompany.ppai.entities;
   this.registrarCambioEstado(estadoFueraServicio, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
   }
  
+  public void ponerOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
+  Estado estadoOnline) {
+
+  this.finalizarCambioEstadoActual(fechaHoraActual);
+  this.registrarCambioEstado(estadoOnline, fechaHoraActual, responsableDeInspeccion);
+  }
 
   public void finalizarCambioEstadoActual(LocalDateTime fechaHoraFin) {
   for (CambioEstado cambioEstado : this.cambioEstado) {
@@ -145,7 +151,15 @@ package com.mycompany.ppai.entities;
   Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
 
   if (nuevoEstado != null && !nuevoEstado.equals(this.estadoActual)) {
-  CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
+  
+  CambioEstado nuevoCambioEstado = null;
+          
+  if(motivosFueraServicio != null) {
+  nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
+  }else {
+   nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion);
+  }
+
   this.cambioEstado.add(nuevoCambioEstado);
   this.setEstadoActual(nuevoEstado);
   }
