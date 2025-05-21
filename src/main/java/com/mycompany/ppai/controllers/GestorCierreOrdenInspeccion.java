@@ -196,7 +196,7 @@ package com.mycompany.ppai.controllers;
   }
  
 
-  interfazNotificacion.enviarNotificacion(mailsResponsables, cuerpoNotificacion);
+  interfazNotificacion.notificar(mailsResponsables, cuerpoNotificacion);
   }
  
 
