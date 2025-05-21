@@ -24,9 +24,7 @@ package com.mycompany.ppai.controllers;
   private List<PantallaCCRS> pantallasCCRS;
   private Sesion sesionActual;
   private Empleado empleadoLogeado;
-  private List<Object[]> motivosFueraServicio;
-  private String nombreEstadoFueraServicio;
- 
+  private List<Object[]> motivosFueraServicio; 
 
   // Constructor
   public GestorCierreOrdenInspeccion(Sesion sesionActual, PantallaCierreOrdenInspeccion pantallaCierreOrdenInspeccion,
@@ -63,7 +61,7 @@ package com.mycompany.ppai.controllers;
   }
   }
 
-  this.ordenarOrdenesPorFechaFinalizacion(ordenesFiltradas); // Corrected variable name
+  this.ordenarOrdenesPorFechaFinalizacion(ordenesFiltradas); 
   return ordenesFiltradas;
   }
  
@@ -141,13 +139,14 @@ package com.mycompany.ppai.controllers;
   }
   }
   this.selectOrdenDeInspeccion.cerrar(estadoCerrada, this.observacionCierreOrden, this.fechaHoraActual);
- 
 
   Estado estadoFueraServicio = null;
+  String nombreEstadoFueraServicio;
+
   for (Estado estado : todosLosEstados) {
   if (estado.esAmbitoSismografo() && estado.esFueraDeServicio()) {
   estadoFueraServicio = estado;
-  this.nombreEstadoFueraServicio = estado.getNombre();
+  nombreEstadoFueraServicio = estado.getNombre();
   break;
   }
   }
@@ -159,11 +158,10 @@ package com.mycompany.ppai.controllers;
   + this.selectOrdenDeInspeccion.getNumeroOrden()
   + " con el sismógrafo (Identificador: "
   + this.selectOrdenDeInspeccion.mostrarInfoOrdenesInspeccion().get("identificadorSismografo").getAsString()
-  + ") en estado " + this.nombreEstadoFueraServicio
+  + ") en estado " + nombreEstadoFueraServicio
   + " desde " + this.fechaHoraActual
   + ". Motivos: " + this.obtenerDescripcionMotivos();
  
-
   this.notificarResponsablesDeReparacion(cuerpoNotificacion);
   this.publicarEnMonitoresCCRS(cuerpoNotificacion);
   }
