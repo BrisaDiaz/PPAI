@@ -110,7 +110,7 @@ public class GestorCierreOrdenInspeccion {
      */
     // Este método se llama cuando el usuario selecciona y comenta los motivos para poner el sismógrafo fuera de servicio (ejecutado desde pantallaCierreOrdenInspeccion).
     public void tomarMotivosFueraDeServicio(List<String[]> motivosSeleccionados) {
-        this.motivosFueraServicio.clear(); // Clear previous selections
+        this.motivosFueraServicio.clear(); 
         for (String[] motivo : motivosSeleccionados) {
             String motivoTipoDescripcion = motivo[0];
             String motivoDescripcion = motivo[1];
@@ -126,9 +126,11 @@ public class GestorCierreOrdenInspeccion {
     public void tomarConfirmacionCierreOrden(boolean confirmacion) {
         if (confirmacion) {
             if (!validarObservacionCierreOrden() && this.ponerSismografoFueraServicio) {
+                // Validación de la observación de cierre de orden (A3)
                 this.pantallaCierreOrdenInspeccion.mostrarMensaje("Debe ingresar una observación para cerrar la orden.");
                 this.pantallaCierreOrdenInspeccion.solicitarObservacionCierreOrden();
             } else if (this.ponerSismografoFueraServicio && !validarSelecMotivoFueraDeServicio()) {
+                // Validación de la selección de motivos para poner el sismógrafo fuera de servicio (A3)
                 this.pantallaCierreOrdenInspeccion.mostrarMensaje("Debe seleccionar al menos un motivo para poner el sismógrafo fuera de servicio.");
                 mostrarTiposMotivoFueraDeServicio();
             } else {
@@ -136,6 +138,7 @@ public class GestorCierreOrdenInspeccion {
                 if (this.ponerSismografoFueraServicio) {
                     this.actualizarSismografoFueraDeServicio();
                 } else {
+                    // Método para poner el sismógrafo online (A2)
                     this.actualizarSismografoOnline();
                 }
                 finCU();
@@ -246,11 +249,10 @@ public class GestorCierreOrdenInspeccion {
         System.out.println("--------------------------------------------------");
     }
 
-    // Method to simulate the "Actor cancels the execution of the use case" (A7)
+    // Método para cancelar el cierre de la orden de inspección (A7)
     public void cancelarCierreOrden() {
         this.pantallaCierreOrdenInspeccion.mostrarMensaje("El cierre de la orden de inspección ha sido cancelado por el usuario.");
         finCU();
-        // Optionally, you might want to reset some of the gestor's state here
         this.selectOrdenDeInspeccion = null;
         this.observacionCierreOrden = null;
         this.motivosFueraServicio.clear();
