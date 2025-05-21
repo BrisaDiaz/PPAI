@@ -41,9 +41,8 @@ package com.mycompany.ppai.controllers;
   }
  
 
-  /**
-  * Inicia el proceso de cierre de una orden de inspección.
-  */
+  // Inicia el proceso de cierre de una orden de inspección.
+  // Este método se llama desde la interfaz de usuario para iniciar el flujo de cierre de orden de inspección. (ejecutado desde pantallaCierreOrdenInspeccion)
   public void nuevoCierreOrdenInspeccion() {
   this.obtenerRILogeado();
   List<JsonObject> infoOrdenesInspeccion = this.mostrarInfoOrdenesInspeccion();
@@ -79,12 +78,13 @@ package com.mycompany.ppai.controllers;
   });
   }
 
+  // Este método se llama cuando el usuario selecciona una orden de inspección para cerrar (ejecutado desde pantallaCierreOrdenInspeccion).
   public void tomarSelecOrdenInspeccion(Integer numeroOrden) {
   this.selectOrdenDeInspeccion = OrdenDeInspeccion.obtenerOrdenPorNumero(numeroOrden);
   this.pantallaCierreOrdenInspeccion.solicitarObservacionCierreOrden();
   }
  
-
+  // Este método se llama cuando el usuario ingresa una observación para el cierre de la orden de inspección (ejecutado desde pantallaCierreOrdenInspeccion).
   public void tomarObservacionCierreOrden(String observacion) {
   this.observacionCierreOrden = Objects.requireNonNull(observacion, "La observación de cierre no puede ser nula");
   }
@@ -105,6 +105,7 @@ package com.mycompany.ppai.controllers;
   * @param motivosFueraServicio Lista de arreglos de String, donde cada arreglo contiene
   * [Descripción del MotivoTipo, Comentario].
   */
+ // Este método se llama cuando el usuario selecciona y comenta los motivos para poner el sismógrafo fuera de servicio (ejecutado desde pantallaCierreOrdenInspeccion).
   public void tomarMotivosFueraDeServicio(List<String[]> motivosSeleccionados) {
   for (String[] motivo : motivosSeleccionados) {
   String motivoTipoDescripcion = motivo[0];
@@ -117,9 +118,11 @@ package com.mycompany.ppai.controllers;
   this.pantallaCierreOrdenInspeccion.solicitarConfirmacionCierreOrden();
   }
  
-  public void tomarConfirmacionCierreOrden() {
+ // Este método se llama cuando el usuario confirma el cierre de la orden de inspección (ejecutado desde pantallaCierreOrdenInspeccion).
+  public void tomarConfirmacionCierreOrden(boolean confirmacion) {
+  if (confirmacion) {
   if (this.validarObservacionCierreOrden() && this.validarSelecMotivoFueraDeServicio()) {
-  this.cerrarOrdenDeInspeccion();
+        this.cerrarOrdenDeInspeccion();
   }
   }
 
@@ -206,3 +209,11 @@ package com.mycompany.ppai.controllers;
   }
   }
  }
+
+ public void finCU() {
+    System.out.println("--------------------------------------------------");
+    System.out.println("Fin del caso de uso: Cierre de Orden de Inspección");
+    System.out.println("--------------------------------------------------");
+}
+
+}
