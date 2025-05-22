@@ -12,7 +12,7 @@ public class Estado {
     private static final List<Estado> todosLosEstados = new ArrayList<>();
 
     // Constructor
-    public Estado(String ambito, String nombreEstado) {
+    public Estado(String nombreEstado, String ambito) {
         // Usar requireNonNull para asegurar que los parámetros no sean nulos
         this.ambito = Objects.requireNonNull(ambito, "El ámbito no puede ser nulo");
         this.nombreEstado = Objects.requireNonNull(nombreEstado, "El nombre del estado no puede ser nulo");

@@ -166,7 +166,7 @@ package com.mycompany.ppai.entities;
   }
 
   // Simulación de persistencia
-  public static List<Sismografo> obtenerTodosSismografos() {
+  public static List<Sismografo> obtenerTodosLosSismografos() {
   return todosLosSismografos;
   }
 
