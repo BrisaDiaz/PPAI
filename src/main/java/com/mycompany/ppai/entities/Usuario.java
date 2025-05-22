@@ -32,17 +32,14 @@ public class Usuario {
     // Métodos setters
 
     public void setNombreUsuario(String nombreUsuario) {
-        // Usar requireNonNull en el setter para validar la entrada
         this.nombreUsuario = Objects.requireNonNull(nombreUsuario, "El nombre de usuario no puede ser nulo");
     }
 
     public void setConstraseña(String constraseña) {
-        // Usar requireNonNull en el setter para validar la entrada
         this.constraseña = Objects.requireNonNull(constraseña, "La contraseña no puede ser nula");
     }
 
     public void setEmpleado(Empleado empleado) {
-        // Usar requireNonNull en el setter para validar la entrada
         this.empleado = Objects.requireNonNull(empleado, "El empleado no puede ser nulo");
     }
 

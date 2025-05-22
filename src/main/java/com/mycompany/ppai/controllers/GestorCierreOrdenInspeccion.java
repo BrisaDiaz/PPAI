@@ -114,7 +114,7 @@ package com.mycompany.ppai.controllers;
          if (this.ponerSismografoFueraServicio) {
              this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(this.tiposMotivoFueraDeServicioCache);
          } else {
-             this.pantallaCierreOrdenInspeccion.solicitarConfirmacionCierreOrden(); // Skip motive selection
+             this.pantallaCierreOrdenInspeccion.solicitarConfirmacionCierreOrden();
          }
      }
  
@@ -157,6 +157,7 @@ package com.mycompany.ppai.controllers;
      // Este método se llama cuando el usuario confirma el cierre de la orden de inspección (ejecutado desde pantallaCierreOrdenInspeccion).
      public boolean tomarConfirmacionCierreOrden(boolean confirmacion) {
          if (confirmacion) {
+                // Validar la observación de cierre de orden (A3)
              this.validacionObservacionOk = validarObservacionCierreOrden();
              if (!this.validacionObservacionOk) {
                  this.pantallaCierreOrdenInspeccion.mostrarMensaje("Debe ingresar una observación para cerrar la orden.");

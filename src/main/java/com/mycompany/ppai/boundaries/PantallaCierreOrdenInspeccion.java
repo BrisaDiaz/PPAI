@@ -134,7 +134,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         });
         JScrollPane ordenesScrollPane = new JScrollPane(ordenesTable);
         seleccionarOrdenBtn = new JButton(BOTON_SELECCIONAR_ORDEN);
-        seleccionarOrdenBtn.addActionListener(this::seleccionarOrdenClick);
+        seleccionarOrdenBtn.addActionListener(this::tomarSelecOrdenInspeccion);
         JPanel seleccionarOrdenPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         seleccionarOrdenPanel.add(seleccionarOrdenBtn);
         ordenesPanel.add(new JLabel(LABEL_SELECCIONAR_ORDEN, SwingConstants.CENTER), BorderLayout.NORTH);
@@ -162,7 +162,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         JScrollPane observacionScrollPane = new JScrollPane(observacionTextArea);
         fueraServicioCheckBox = new JCheckBox(CHECKBOX_FUERA_SERVICIO);
         confirmarObservacionBtn = new JButton(BOTON_CONFIRMAR_OBSERVACION);
-        confirmarObservacionBtn.addActionListener(this::confirmarObservacionClick);
+        confirmarObservacionBtn.addActionListener(this::tomarObservacion);
         observacionPanel.add(new JLabel(LABEL_OBSERVACION, SwingConstants.CENTER));
         observacionPanel.add(observacionScrollPane);
         observacionPanel.add(fueraServicioCheckBox);
@@ -176,7 +176,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         motivosPanel.setLayout(new BoxLayout(motivosPanel, BoxLayout.Y_AXIS));
         JScrollPane motivosScrollPane = new JScrollPane(motivosPanel);
         confirmarMotivosBtn = new JButton(BOTON_CONFIRMAR_MOTIVOS);
-        confirmarMotivosBtn.addActionListener(this::confirmarMotivosClick);
+        confirmarMotivosBtn.addActionListener(this::tomarComentarioPorMotivoTipo);
         motivosPanelContainer.add(new JLabel(LABEL_MOTIVOS, SwingConstants.CENTER), BorderLayout.NORTH);
         motivosPanelContainer.add(motivosScrollPane, BorderLayout.CENTER);
         motivosPanelContainer.add(confirmarMotivosBtn, BorderLayout.SOUTH);
@@ -187,8 +187,8 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         confirmacionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         confirmarCierreBtn = new JButton(BOTON_CONFIRMAR_CIERRE);
         cancelarCierreBtn = new JButton(BOTON_CANCELAR);
-        confirmarCierreBtn.addActionListener(e -> confirmarCierreFinalClick(true));
-        cancelarCierreBtn.addActionListener(e -> confirmarCierreFinalClick(false));
+        confirmarCierreBtn.addActionListener(e -> tomarConfirmacionCierre(true));
+        cancelarCierreBtn.addActionListener(e -> tomarConfirmacionCierre(false));
         confirmacionPanel.add(new JLabel(LABEL_CONFIRMACION, SwingConstants.CENTER));
         confirmacionPanel.add(confirmarCierreBtn);
         confirmacionPanel.add(cancelarCierreBtn);
@@ -261,6 +261,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         lastSelectedRow = -1;
 
         if (ordenesInfo.isEmpty()) {
+            // Si no hay órdenes, mostrar mensaje y cambiar a la vista correspondiente (A1)
             cardLayout.show(mainPanel, "sinOrdenes");
         } else {
             for (JsonObject info : ordenesInfo) {
@@ -278,7 +279,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         repaint();
     }
 
-    private void seleccionarOrdenClick(ActionEvent e) {
+    private void tomarSelecOrdenInspeccion(ActionEvent e) {
         int selectedRow = ordenesTable.getSelectedRow();
         if (selectedRow != -1) {
             selectedOrderNumber = (Integer) ordenesTableModel.getValueAt(selectedRow, 1);
@@ -304,7 +305,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         }
     }
 
-    private void confirmarObservacionClick(ActionEvent e) {
+    private void tomarObservacion(ActionEvent e) {
         String observacion = observacionTextArea.getText();
         boolean fueraServicio = fueraServicioCheckBox.isSelected();
         gestor.tomarObservacionCierreOrden(observacion, fueraServicio);
@@ -354,7 +355,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         cardLayout.show(mainPanel, "motivos");
     }
 
-   private void confirmarMotivosClick(ActionEvent e) {
+   private void tomarComentarioPorMotivoTipo(ActionEvent e) {
         List<String[]> motivosSeleccionados = new ArrayList<>();
         for (Map.Entry<String, JCheckBox> entry : motivoCheckBoxes.entrySet()) {
             if (entry.getValue().isSelected()) {
@@ -378,7 +379,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         motivosPanelContainer.setEnabled(false);
     }
 
-    private void confirmarCierreFinalClick(boolean confirmacionFinal) {
+    private void tomarConfirmacionCierre(boolean confirmacionFinal) {
         boolean resultado = gestor.tomarConfirmacionCierreOrden(confirmacionFinal);
         if (resultado) {
             if (confirmacionFinal) {

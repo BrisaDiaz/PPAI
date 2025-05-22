@@ -30,7 +30,6 @@ public class Sesion {
 
     // Métodos setters
     public void setFechaHoraDesde(LocalDateTime fechaHoraDesde) {
-        // Usar requireNonNull en el setter para validar la entrada
         this.fechaHoraDesde = Objects.requireNonNull(fechaHoraDesde, "La fecha y hora de inicio no pueden ser nulas");
     }
 
@@ -39,7 +38,6 @@ public class Sesion {
     }
 
     public void setUsuario(Usuario usuario) {
-        // Usar requireNonNull en el setter para validar la entrada
         this.usuario = Objects.requireNonNull(usuario, "El usuario no puede ser nulo");
     }
 

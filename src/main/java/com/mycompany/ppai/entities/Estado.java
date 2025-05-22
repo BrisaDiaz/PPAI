@@ -31,12 +31,10 @@ public class Estado {
     // Métodos Setters
 
     public void setAmbito(String ambito) {
-        // Usar requireNonNull en el setter para validar la entrada
         this.ambito = Objects.requireNonNull(ambito, "El ámbito no puede ser nulo");
     }
 
     public void setNombreEstado(String nombreEstado) {
-        // Usar requireNonNull en el setter para validar la entrada
         this.nombreEstado = Objects.requireNonNull(nombreEstado, "El nombre del estado no puede ser nulo");
     }
 
