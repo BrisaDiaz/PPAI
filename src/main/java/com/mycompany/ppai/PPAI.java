@@ -44,8 +44,8 @@ public class PPAI {
             EstacionSismologica estacion2 = new EstacionSismologica("Estación Norte", "ESN02", "DOC456", LocalDateTime.now().minusDays(25), -33.0000F, -59.0000F, 2);
 
             // Crear sismógrafos
-            Sismografo sismografo1 = new Sismografo(LocalDateTime.now().minusYears(2), "SMG001", 1001, estacion1, estadoOnlineSismografo, LocalDateTime.now());
-            Sismografo sismografo2 = new Sismografo(LocalDateTime.now().minusYears(1), "SMG002", 2002, estacion2, estadoOnlineSismografo, LocalDateTime.now());
+            Sismografo sismografo1 = new Sismografo(LocalDateTime.now().minusYears(2), "SMG001", 1001, estacion1, estadoOnlineSismografo, LocalDateTime.now(), empleadoRI);
+            Sismografo sismografo2 = new Sismografo(LocalDateTime.now().minusYears(1), "SMG002", 2002, estacion2, estadoOnlineSismografo, LocalDateTime.now(), empleadoRI);
             Sismografo.agregarSismografo(sismografo1);
             Sismografo.agregarSismografo(sismografo2);
 

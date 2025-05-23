@@ -22,7 +22,7 @@ package com.mycompany.ppai.entities;
   // Constructor
 
   public Sismografo(LocalDateTime fechaAdquisicion, String identificadorSismografo, Integer nroSerie,
-  EstacionSismologica estacionSismologica, Estado estadoInicial, LocalDateTime fechaHoraActual) {
+  EstacionSismologica estacionSismologica, Estado estadoInicial, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
 
   this.fechaAdquisicion = Objects.requireNonNull(fechaAdquisicion, "La fecha de adquisición no puede ser nula");
   this.identificadorSismografo = Objects.requireNonNull(identificadorSismografo, "El identificador no puede ser nulo");
@@ -30,7 +30,10 @@ package com.mycompany.ppai.entities;
   this.estacionSismologica = Objects.requireNonNull(estacionSismologica, "La estación sismológica no puede ser nula");
   this.cambioEstado = new ArrayList<>();
   this.estadoActual = Objects.requireNonNull(estadoInicial, "El estado inicial no puede ser nulo");
-  this.registrarCambioEstado(estadoInicial, fechaHoraActual, null);
+  
+  // Registrar el estado inicial directamente en el constructor
+  CambioEstado cambioEstadoInicial = new CambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion, null); // Suponiendo el constructor de CambioEstado
+  this.cambioEstado.add(cambioEstadoInicial);
   }
  
 
@@ -124,12 +127,18 @@ package com.mycompany.ppai.entities;
   }
 
   public void finalizarCambioEstadoActual(LocalDateTime fechaHoraFin) {
-  for (CambioEstado cambioEstado : this.cambioEstado) {
-    if (cambioEstado.esCambioEstadoActual()) {
-    cambioEstado.setFechaHoraFin(fechaHoraFin);
-    break;
+    CambioEstado cambioEstadoActual = null;
+
+    for (CambioEstado cambioEstadoIterado : this.cambioEstado) {
+      if (cambioEstadoIterado.esCambioEstadoActual()) {
+        cambioEstadoActual = cambioEstadoIterado;
+        break;
+      }
     }
-  }
+    if (cambioEstadoActual == null) {
+      throw new IllegalStateException("No hay un cambio de estado actual para finalizar.");
+    }
+    cambioEstadoActual.setFechaHoraFin(fechaHoraFin);
   }
  
   public void registrarCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
@@ -148,21 +157,14 @@ package com.mycompany.ppai.entities;
   * cuando el sismógrafo pasa a "Fuera de Servicio".
   */
   public void registrarCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual,
-  Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
+    Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
 
-  if (nuevoEstado != null && !nuevoEstado.equals(this.estadoActual)) {
-  
-  CambioEstado nuevoCambioEstado = null;
-          
-  if(motivosFueraServicio != null) {
-  nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
-  }else {
-   nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion);
-  }
-
-  this.cambioEstado.add(nuevoCambioEstado);
-  this.setEstadoActual(nuevoEstado);
-  }
+    if (nuevoEstado != null && !nuevoEstado.equals(this.estadoActual)) {
+    
+    CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
+    this.cambioEstado.add(nuevoCambioEstado);
+    this.setEstadoActual(nuevoEstado);
+    }
   }
 
   // Simulación de persistencia

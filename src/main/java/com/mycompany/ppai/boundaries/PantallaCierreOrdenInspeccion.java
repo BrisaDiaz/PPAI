@@ -71,7 +71,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     private JButton volverInicioBtn;
     private JPanel sinOrdenesPanel;
     private JLabel sinOrdenesLabel;
-    private List<String> tiposMotivoFueraDeServicioActual = new ArrayList<>();
+    private List<String> motivosTipoFueraServicio = new ArrayList<>();
 
     public PantallaCierreOrdenInspeccion(GestorCierreOrdenInspeccion gestor) {
         this.gestor = gestor;
@@ -165,7 +165,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         JScrollPane observacionScrollPane = new JScrollPane(observacionTextArea);
         fueraServicioCheckBox = new JCheckBox(CHECKBOX_FUERA_SERVICIO);
         confirmarObservacionBtn = new JButton(BOTON_CONFIRMAR_OBSERVACION);
-        confirmarObservacionBtn.addActionListener(this::tomarObservacion);
+        confirmarObservacionBtn.addActionListener(this::tomarObservacionCierreOrden);
         observacionPanel.add(new JLabel(LABEL_OBSERVACION, SwingConstants.CENTER));
         observacionPanel.add(observacionScrollPane);
         observacionPanel.add(fueraServicioCheckBox);
@@ -256,19 +256,19 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         observacionPendienteReintento = null;
         fueraServicioPendienteReintento = false;
         motivosPendientesReintento = null;
-        tiposMotivoFueraDeServicioActual.clear();
+        motivosTipoFueraServicio.clear();
     }
 
-    public void mostrarInfoOrdenesInspeccion(List<JsonObject> ordenesInfo) {
+    public void mostrarInfoOrdenesInspeccion(List<JsonObject> infoOrdenesInspeccion) {
         ordenMap.clear();
         ordenesTableModel.setRowCount(0);
         lastSelectedRow = -1;
 
-        if (ordenesInfo.isEmpty()) {
+        if (infoOrdenesInspeccion.isEmpty()) {
             // Si no hay órdenes, mostrar mensaje y cambiar a la vista correspondiente (A1)
             cardLayout.show(mainPanel, "sinOrdenes");
         } else {
-            for (JsonObject info : ordenesInfo) {
+            for (JsonObject info : infoOrdenesInspeccion) {
                 int numeroOrden = info.get("numeroOrden").getAsInt();
                 String identificadorSismografo = info.get("identificadorSismografo").getAsString();
                 String fechaHoraFinalizacion = info.get("fechaHoraFinalizacion").getAsString();
@@ -284,19 +284,23 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     }
 
     private void tomarSelecOrdenInspeccion(ActionEvent e) {
-        int selectedRow = ordenesTable.getSelectedRow();
-        if (selectedRow != -1) {
-            selectedOrderNumber = (Integer) ordenesTableModel.getValueAt(selectedRow, 1);
-            gestor.tomarSelecOrdenInspeccion(selectedOrderNumber);
+        int selecOrdenInspeccion = ordenesTable.getSelectedRow();
+        if (selecOrdenInspeccion != -1) {
+            
+            selectedOrderNumber = (Integer) ordenesTableModel.getValueAt(selecOrdenInspeccion, 1);
             ordenesTable.setEnabled(false);
             seleccionarOrdenBtn.setEnabled(false);
-            cardLayout.show(mainPanel, "observacion");
+            gestor.tomarSelecOrdenInspeccion(selectedOrderNumber);
+            
         } else {
             JOptionPane.showMessageDialog(this, MENSAJE_SELECCIONAR_ORDEN, TITULO_ADVERTENCIA, JOptionPane.WARNING_MESSAGE);
         }
     }
 
     public void solicitarObservacionCierreOrden() {
+        observacionTextArea.setText("");
+        fueraServicioCheckBox.setSelected(false);
+        cardLayout.show(mainPanel, "observacion");
         observacionTextArea.setEnabled(true);
         fueraServicioCheckBox.setEnabled(true);
         confirmarObservacionBtn.setEnabled(true);
@@ -309,7 +313,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         }
     }
 
-    private void tomarObservacion(ActionEvent e) {
+    private void tomarObservacionCierreOrden(ActionEvent e) {
         String observacion = observacionTextArea.getText();
         boolean fueraServicio = fueraServicioCheckBox.isSelected();
         gestor.tomarObservacionCierreOrden(observacion, fueraServicio);
@@ -322,7 +326,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     }
 
     public void solicitarMotivosFueraDeServicio(List<String> tiposMotivo) {
-        this.tiposMotivoFueraDeServicioActual = tiposMotivo;
+        this.motivosTipoFueraServicio = tiposMotivo;
         motivosPanel.removeAll();
         motivoCheckBoxes.clear();
         comentarioTextFields.clear();
@@ -359,17 +363,24 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         cardLayout.show(mainPanel, "motivos");
     }
 
-   private void tomarComentarioPorMotivoTipo(ActionEvent e) {
+    private void tomarComentarioPorMotivoTipo(ActionEvent e) {
         List<String[]> motivosSeleccionados = new ArrayList<>();
         for (Map.Entry<String, JCheckBox> entry : motivoCheckBoxes.entrySet()) {
-            if (entry.getValue().isSelected()) {
-                String motivoTipo = entry.getKey();
-                String comentario = comentarioTextFields.get(motivoTipo).getText();
-                motivosSeleccionados.add(new String[]{motivoTipo, comentario});
+            String[] motivoComentario = tomarComentarioMotivoTipo(entry);
+            if (motivoComentario != null) {
+                motivosSeleccionados.add(motivoComentario);
             }
         }
         gestor.tomarMotivosFueraDeServicio(motivosSeleccionados);
-        cardLayout.show(mainPanel, "confirmacion");
+    }
+    
+    public String[] tomarComentarioMotivoTipo(Map.Entry<String, JCheckBox> entry) {
+        if (entry.getValue().isSelected()) {
+            String motivoTipo = entry.getKey();
+            String comentario = comentarioTextFields.get(motivoTipo).getText();
+            return new String[]{motivoTipo, comentario};
+        }
+        return null;
     }
 
     public void solicitarConfirmacionCierreOrden() {
@@ -384,8 +395,8 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     }
 
     private void tomarConfirmacionCierre(boolean confirmacionFinal) {
-        boolean resultado = gestor.tomarConfirmacionCierreOrden(confirmacionFinal);
-        if (resultado) {
+        boolean confirmacionCierreOrden = gestor.tomarConfirmacionCierreOrden(confirmacionFinal);
+        if (confirmacionCierreOrden) {
             if (confirmacionFinal) {
                 // Ocultar botones de confirmar y cancelar
                 confirmarCierreBtn.setVisible(false);
@@ -403,7 +414,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
                 JOptionPane.showMessageDialog(this, MENSAJE_ERROR_OBSERVACION, "Error", JOptionPane.ERROR_MESSAGE);
             } else if (gestor.esPonerSismografoFueraDeServicio() && (!gestor.esValidacionComentariosMotivosOk() || !gestor.esValidacionSelecMotivoOk())) {
                 cardLayout.show(mainPanel, "motivos");
-                solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicioActual);
+                solicitarMotivosFueraDeServicio(motivosTipoFueraServicio);
                 if (!gestor.esValidacionComentariosMotivosOk()) {
                     JOptionPane.showMessageDialog(this, MENSAJE_ERROR_COMENTARIOS, "Error", JOptionPane.ERROR_MESSAGE);
                 } else if (!gestor.esValidacionSelecMotivoOk()) {

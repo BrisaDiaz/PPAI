@@ -5,7 +5,6 @@ package com.mycompany.ppai.entities;
  import java.util.ArrayList;
  import java.util.List;
  import java.util.Objects;
- import com.mycompany.ppai.entities.MotivoFueraServicio;
  
 
  public class CambioEstado {
@@ -92,21 +91,21 @@ package com.mycompany.ppai.entities;
   * @param motivosFueraServicio Lista de pares (MotivoTipo, Comentario) que describen los motivos.
   */
   public void registrarMotivosFueraDeServicio(List<Object[]> motivosFueraServicio) {
-  this.motivoFueraServicio = new ArrayList<>();
+    this.motivoFueraServicio = new ArrayList<>();
 
-  if (motivosFueraServicio != null) {
+    if (motivosFueraServicio != null) {
 
-    for (Object[] motivoData : motivosFueraServicio) {
+      for (Object[] motivoData : motivosFueraServicio) {
         MotivoTipo tipo = (MotivoTipo) motivoData[0];
         String comentario = (String) motivoData[1];
-        
+
         MotivoFueraServicio motivo = new MotivoFueraServicio(comentario, tipo);
         this.motivoFueraServicio.add(motivo);
+      }
     }
   }
-  }
- 
+  
   public boolean esCambioEstadoActual() {
-  return this.fechaHoraFin == null;
+    return this.fechaHoraFin == null;
   }
  }

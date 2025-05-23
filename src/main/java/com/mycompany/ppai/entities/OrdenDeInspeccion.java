@@ -104,10 +104,6 @@ public class OrdenDeInspeccion {
         return this.empleado.equals(empleado);
     }
 
-    public boolean esMiNroOrden(Integer numeroOrden) {
-        return this.numeroOrden.equals(numeroOrden);
-    }
-
     public boolean estoyCompletamenteRealizada() {
         return this.estado.esCompletamenteRealizada();
     }
@@ -115,14 +111,7 @@ public class OrdenDeInspeccion {
     public JsonObject mostrarDatosOrdeneDeInspeccion(List<Sismografo> sismografos) { 
         JsonObject datos = new JsonObject();
         datos.addProperty("numeroOrden", this.getNumeroOrden());
-
-
-        if (this.getFechaHoraFinalizacion() != null) {
-            datos.addProperty("fechaHoraFinalizacion", this.getFechaHoraFinalizacion().toString());
-        } else {
-            datos.addProperty("fechaHoraFinalizacion", (String) null);
-        }
-
+        datos.addProperty("fechaHoraFinalizacion", this.getFechaHoraFinalizacion().toString());
         datos.addProperty("nombreEstacion", this.estacionSismologica.getNombre());
         datos.addProperty("identificadorSismografo", this.estacionSismologica.mostrarIdentificadorSismografo(sismografos));
 
