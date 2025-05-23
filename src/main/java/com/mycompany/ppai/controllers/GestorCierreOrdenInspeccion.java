@@ -299,7 +299,7 @@ package com.mycompany.ppai.controllers;
                  mailsResponsables.add(empleado.obtenerMail());
              }
          }
-         interfazNotificacion.notificar(mailsResponsables, cuerpoNotificacion);
+         interfazNotificacion.enviarNotificacion(mailsResponsables, cuerpoNotificacion);
      }
  
      public void publicarEnMonitoresCCRS(String cuerpoNotificacion) {

@@ -23,7 +23,7 @@ public class InterfazNotificacion {
         return cuerpoNotificacion;
     }
     
-    public void notificar(List<String> mails, String cuerpoNotificacion){
+    public void enviarNotificacion(List<String> mails, String cuerpoNotificacion){
         setCuerpoNotificacion(cuerpoNotificacion);
         // Simulación de envío de notificación
         for (String mail : mails) {
