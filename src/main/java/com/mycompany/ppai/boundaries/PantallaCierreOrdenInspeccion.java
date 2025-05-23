@@ -93,6 +93,9 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
 
         add(mainPanel);
         cardLayout.show(mainPanel, "loading");
+    }
+
+    public void habilitarVentana() {
         setVisible(true);
     }
 
@@ -209,8 +212,9 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         cardLayout.show(mainPanel, "loading");
         habilitarBotonesConfirmacionCancelacion(true);
         limpiarCampos(); // Llamar al método para limpiar los campos
-        gestor.nuevoCierreOrdenInspeccion();
         resetearEstadoReintento();
+        habilitarVentana();
+        gestor.nuevoCierreOrdenInspeccion();
     }
 
     private void limpiarCampos() {

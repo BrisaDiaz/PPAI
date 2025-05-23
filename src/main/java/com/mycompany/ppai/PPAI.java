@@ -7,7 +7,6 @@ import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
 import com.mycompany.ppai.entities.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class PPAI {
@@ -82,7 +81,6 @@ public class PPAI {
             PantallaCierreOrdenInspeccion pantalla = new PantallaCierreOrdenInspeccion(gestor);
             gestor.setPantallaCierreOrdenInspeccion(pantalla);
             
-            pantalla.setVisible(true); // Hacer la pantalla visible para la interacción
             pantalla.opcionCerrarOrdenDeInspeccion();
         });
     }
