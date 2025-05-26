@@ -83,19 +83,13 @@ package com.mycompany.ppai.controllers;
      public List<JsonObject> mostrarInfoOrdenesInspeccion() {
          List<OrdenDeInspeccion> ordenes = OrdenDeInspeccionRepository.obtenerTodos();
          List<Sismografo> sismografos = SismografoRepository.obtenerTodos();
-         List<OrdenDeInspeccion> ordenesFiltradas = new ArrayList<>();
          List<JsonObject> inforOrdenes = new ArrayList<>();
 
- 
          for (OrdenDeInspeccion orden : ordenes) {
              if (orden.estoyCompletamenteRealizada() && orden.esMiRI(this.empleadoLogeado)) {
-                 ordenesFiltradas.add(orden);
+                inforOrdenes.add(orden.mostrarDatosOrdeneDeInspeccion(sismografos));
              }
          }
-         for (OrdenDeInspeccion orden : ordenesFiltradas) {
-             inforOrdenes.add(orden.mostrarDatosOrdeneDeInspeccion(sismografos));
-         }
-        
          this.ordenarOrdenesPorFechaFinalizacion(inforOrdenes);
          return inforOrdenes;
      }
