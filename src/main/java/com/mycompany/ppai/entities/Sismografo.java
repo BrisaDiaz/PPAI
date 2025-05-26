@@ -15,12 +15,7 @@ package com.mycompany.ppai.entities;
   private List<CambioEstado> cambioEstado;
   private Estado estadoActual;
 
-  // Simulación de persistencia
-  private static final List<Sismografo> todosLosSismografos = new ArrayList<>();
-   
-
   // Constructor
-
   public Sismografo(LocalDateTime fechaAdquisicion, String identificadorSismografo, Integer nroSerie,
   EstacionSismologica estacionSismologica, Estado estadoInicial, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
 
@@ -166,15 +161,4 @@ package com.mycompany.ppai.entities;
     this.setEstadoActual(nuevoEstado);
     }
   }
-
-  // Simulación de persistencia
-  public static List<Sismografo> obtenerTodosLosSismografos() {
-  return todosLosSismografos;
-  }
-
-  public static void agregarSismografo(Sismografo sismografo) {
-  todosLosSismografos.add(Objects.requireNonNull(sismografo, "El sismógrafo no puede ser nulo"));
-  }
-
-
  }

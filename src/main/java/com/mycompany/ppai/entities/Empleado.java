@@ -1,7 +1,5 @@
 package com.mycompany.ppai.entities;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class Empleado {
@@ -10,9 +8,6 @@ public class Empleado {
     private String telefono;
     private String mail;
     private Rol rol;
-
-    // Simulación de persistencia
-    private static final List<Empleado> todosLosEmpleados = new ArrayList<>();
 
     public Empleado(String nombre, String apellido, String telefono, String mail, Rol rol) {
         this.nombre = Objects.requireNonNull(nombre, "Nombre no puede ser nulo");
@@ -71,10 +66,4 @@ public class Empleado {
     public boolean esResponsableDeReparacion() {
         return rol.esResponsableDeReparacion();
     }
-
-    // simulación de persistencia
-    public static List<Empleado> obtenerTodosLosEmpleados() {
-        return todosLosEmpleados;
-    }
-    
 }

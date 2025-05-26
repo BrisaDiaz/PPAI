@@ -5,7 +5,7 @@ import com.mycompany.ppai.boundaries.MonitorCCRS;
 import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
 import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
 import com.mycompany.ppai.entities.*;
-
+import com.mycompany.ppai.db;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +20,8 @@ public class PPAI {
             // Crear empleados
             Empleado empleadoRI = new Empleado("Juan", "Pérez", "123456789", "juan.perez@example.com", rolRI);
             Empleado empleadoReparacion1 = new Empleado("Ana", "Gómez", "987654321", "ana.gomez@example.com", rolReparacion);
-            Empleado.obtenerTodosLosEmpleados().addAll(List.of(empleadoRI, empleadoReparacion1));
+            db.agregarEmpleado(empleadoReparacion1);
+            db.agregarEmpleado(empleadoRI);
 
             // Crear usuarios
             Usuario usuarioRI = new Usuario("jperez", "password", empleadoRI);
@@ -34,10 +35,11 @@ public class PPAI {
             Estado estadoFueraDeServicioSismografo = new Estado("Fuera de Servicio", "Sismógrafo");
             Estado estadoOnlineSismografo = new Estado("Online", "Sismógrafo");
 
-            Estado.agregarEstado(estadoCompletamenteRealizada);
-            Estado.agregarEstado(estadoCerradaOrden);
-            Estado.agregarEstado(estadoFueraDeServicioSismografo);
-            Estado.agregarEstado(estadoOnlineSismografo);
+            db.agregarEstado(estadoOnlineSismografo);
+            db.agregarEstado(estadoCerradaOrden);
+            db.agregarEstado(estadoFueraDeServicioSismografo);
+            db.agregarEstado(estadoOnlineSismografo);
+
 
             // Crear estaciones sismológicas
             EstacionSismologica estacion1 = new EstacionSismologica("Estación Central", "ESC01", "DOC123", LocalDateTime.now().minusDays(30), -34.6037F, -58.3816F, 1);
@@ -46,8 +48,9 @@ public class PPAI {
             // Crear sismógrafos
             Sismografo sismografo1 = new Sismografo(LocalDateTime.now().minusYears(2), "SMG001", 1001, estacion1, estadoOnlineSismografo, LocalDateTime.now(), empleadoRI);
             Sismografo sismografo2 = new Sismografo(LocalDateTime.now().minusYears(1), "SMG002", 2002, estacion2, estadoOnlineSismografo, LocalDateTime.now(), empleadoRI);
-            Sismografo.agregarSismografo(sismografo1);
-            Sismografo.agregarSismografo(sismografo2);
+            
+            db.agregarSismografo(sismografo1);
+            db.agregarSismografo(sismografo2);
 
             // Crear órdenes de inspección COMPLETAMENTE REALIZADAS
             OrdenDeInspeccion orden1 = new OrdenDeInspeccion(LocalDateTime.now().minusDays(7), 1, estadoCompletamenteRealizada, empleadoRI, estacion1);
@@ -58,9 +61,9 @@ public class PPAI {
             orden3_cerrada.setFechaHoraFinalizacion(LocalDateTime.now().minusDays(10).plusHours(4));
             orden3_cerrada.cerrar(estadoCerradaOrden, "Cierre de prueba", LocalDateTime.now().minusDays(9));
 
-            OrdenDeInspeccion.agregarOrdenDeInspeccion(orden1);
-            OrdenDeInspeccion.agregarOrdenDeInspeccion(orden2);
-            OrdenDeInspeccion.agregarOrdenDeInspeccion(orden3_cerrada);
+            db.agregarOrdenDeInspeccion(orden1);
+            db.agregarOrdenDeInspeccion(orden2);
+            db.agregarOrdenDeInspeccion(orden3_cerrada);
 
             // Crear Monitores CCRS
             MonitorCCRS monitor1 = new MonitorCCRS("Monitor CCRS 1");
@@ -73,8 +76,9 @@ public class PPAI {
             // Crear Motivos de Fuera de Servicio
             MotivoTipo motivoTipo1 = new MotivoTipo("Falla de energía");
             MotivoTipo motivoTipo2 = new MotivoTipo("Problema de sensor");
-            MotivoTipo.agregarMotivoTipoFueraServicio(motivoTipo1);
-            MotivoTipo.agregarMotivoTipoFueraServicio(motivoTipo2);
+            
+            db.agregarMotivoTipo(motivoTipo1);
+            db.agregarMotivoTipo(motivoTipo2);
 
             // Crear Gestor y Pantalla
             GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, interfazNotificacion, pantallasCCRS);

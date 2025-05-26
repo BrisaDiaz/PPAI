@@ -2,7 +2,7 @@
 package com.mycompany.ppai.entities;
 
 import java.time.LocalDateTime;
-import java.util.Objects; // Importar Objects para usar requireNonNull
+import java.util.Objects; 
 
 public class Sesion {
     private LocalDateTime fechaHoraDesde;

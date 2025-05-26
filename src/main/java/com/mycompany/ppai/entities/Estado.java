@@ -1,15 +1,10 @@
 package com.mycompany.ppai.entities;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects; // Importar Objects para usar requireNonNull
+import java.util.Objects; 
 
 public class Estado {
     private String ambito;
     private String nombreEstado;
-
-    // Simulación de persistencia
-    private static final List<Estado> todosLosEstados = new ArrayList<>();
 
     // Constructor
     public Estado(String nombreEstado, String ambito) {
@@ -40,7 +35,6 @@ public class Estado {
 
     // Métodos de comportamiento
 
-
     public boolean esAmbitoOrdenDeInspeccion() {
         return ambito.equals("Orden de Inspección");
     }
@@ -61,13 +55,5 @@ public class Estado {
     }
     public boolean esOnline() {
         return nombreEstado.equals("Online");
-    }
-
-    // Simulación de persistencia
-    public static List<Estado> obtenerTodosLosEstados() {
-        return todosLosEstados;
-    }
-    public static void agregarEstado(Estado estado) {
-        todosLosEstados.add(Objects.requireNonNull(estado, "El estado no puede ser nulo"));
     }
 }

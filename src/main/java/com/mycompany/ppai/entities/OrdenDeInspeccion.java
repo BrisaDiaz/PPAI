@@ -3,8 +3,7 @@ package com.mycompany.ppai.entities;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.List;
-import com.google.gson.JsonObject; // Import Gson's JsonObject
-import java.util.ArrayList;
+import com.google.gson.JsonObject; 
 
 public class OrdenDeInspeccion {
 
@@ -16,10 +15,6 @@ public class OrdenDeInspeccion {
     private Estado estado;
     private Empleado empleado;
     private EstacionSismologica estacionSismologica;
-
-    // Simulación de persistencia
-
-    private static final List<OrdenDeInspeccion> todasLasOrdenesDeInspeccion = new ArrayList<OrdenDeInspeccion>();
 
     // Constructor
     public OrdenDeInspeccion(LocalDateTime fechaHoraInicio, Integer numeroOrden, Estado estado, Empleado empleado, EstacionSismologica estacionSismologica) {
@@ -133,21 +128,5 @@ public class OrdenDeInspeccion {
     public void actualizarSismografoOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
     Estado estadoOnline, List<Sismografo> sismografos) {
         this.estacionSismologica.actualizarSismografoOnline(fechaHoraActual, responsableDeInspeccion, estadoOnline, sismografos);
-    }
-
-    // Simulación de persistencia
-    public static List<OrdenDeInspeccion> obtenerTodasOrdenesDeInspeccion() {
-        return todasLasOrdenesDeInspeccion;
-    }
-    public static void agregarOrdenDeInspeccion(OrdenDeInspeccion ordenDeInspeccion) {
-        todasLasOrdenesDeInspeccion.add(ordenDeInspeccion);
-    }
-    public static OrdenDeInspeccion obtenerOrdenPorNumero(Integer numeroOrden) {
-        for (OrdenDeInspeccion orden : todasLasOrdenesDeInspeccion) {
-            if (orden.getNumeroOrden().equals(numeroOrden)) {
-                return orden;
-            }
-        }
-        return null;
     }
 }
