@@ -16,7 +16,7 @@ package com.mycompany.ppai.controllers;
  import java.util.ArrayList;
  import java.util.stream.Collectors;
 
- import com.mycompany.ppai.db;
+ import com.mycompany.ppai.repositories.*;
 
 
  public class GestorCierreOrdenInspeccion {
@@ -81,8 +81,8 @@ package com.mycompany.ppai.controllers;
      }
  
      public List<JsonObject> mostrarInfoOrdenesInspeccion() {
-         List<OrdenDeInspeccion> ordenes = db.obtenerOrdenesDeInspeccion();
-         List<Sismografo> sismografos = db.obtenerSismografos();
+         List<OrdenDeInspeccion> ordenes = OrdenDeInspeccionRepository.obtenerTodos();
+         List<Sismografo> sismografos = SismografoRepository.obtenerTodos();
          List<OrdenDeInspeccion> ordenesFiltradas = new ArrayList<>();
          List<JsonObject> inforOrdenes = new ArrayList<>();
 
@@ -110,7 +110,7 @@ package com.mycompany.ppai.controllers;
  
      // Este método se llama cuando el usuario selecciona una orden de inspección para cerrar (ejecutado desde pantallaCierreOrdenInspeccion).
      public void tomarSelecOrdenInspeccion(Integer numeroOrden) {
-         this.selecOrdenInspeccion = db.obtenerOrdenPorNumero(numeroOrden);
+         this.selecOrdenInspeccion = OrdenDeInspeccionRepository.obtenerPorNumero(numeroOrden);
          this.pantallaCierreOrdenInspeccion.solicitarObservacionCierreOrden();
      }
  
@@ -128,7 +128,7 @@ package com.mycompany.ppai.controllers;
      }
  
      public List<String> mostrarTiposMotivoFueraDeServicio() {
-         List<MotivoTipo> todosMotivoTipo = db.obtenerMotivosTipo();
+         List<MotivoTipo> todosMotivoTipo = MotivoTipoRespository.obtenerTodos();
          return todosMotivoTipo.stream().map(MotivoTipo::getDescripcion).collect(Collectors.toList());
      }
  
@@ -144,7 +144,7 @@ package com.mycompany.ppai.controllers;
              for (String[] motivo : motivosSeleccionados) {
                  String motivoTipoDescripcion = motivo[0];
                  String motivoDescripcion = motivo[1];
-                 MotivoTipo motivoTipo = db.obtenerMotivoTipoPorDescripcion(motivoTipoDescripcion);
+                 MotivoTipo motivoTipo = MotivoTipoRespository.obtenerPorDescripcion(motivoTipoDescripcion);
                  if (motivoTipo != null) {
                      this.motivosFueraServicio.add(new Object[]{motivoTipo, motivoDescripcion});
                  }
@@ -237,7 +237,7 @@ package com.mycompany.ppai.controllers;
      public void cerrarOrdenDeInspeccion() {
          this.getFechaHoraActual();
 
-         List<Estado> todosLosEstados = db.obtenerEstados();
+         List<Estado> todosLosEstados = EstadoRepository.obtenerTodos();
          Estado estadoCerrada = null;
          for (Estado estado : todosLosEstados) {
              if (estado.esAmbitoOrdenDeInspeccion() && estado.esCerrada()) {
@@ -249,7 +249,7 @@ package com.mycompany.ppai.controllers;
      }
  
      public void actualizarSismografoAFueraDeServicio() {
-         List<Estado> todosLosEstados = db.obtenerEstados();
+         List<Estado> todosLosEstados = EstadoRepository.obtenerTodos();
          Estado estadoFueraServicio = null;
          String nombreEstadoFueraServicio = "";
  
@@ -260,7 +260,7 @@ package com.mycompany.ppai.controllers;
                  break;
              }
          }
-         List<Sismografo> todosLosSismografos = db.obtenerSismografos();
+         List<Sismografo> todosLosSismografos = SismografoRepository.obtenerTodos();
          this.selecOrdenInspeccion.actualizarSismografoFueraServicio(this.fechaHoraActual, this.empleadoLogeado,
                  estadoFueraServicio, this.motivosFueraServicio, todosLosSismografos);
  
@@ -279,7 +279,7 @@ package com.mycompany.ppai.controllers;
      }
  
      public void actualizarSismografoAOnline() {
-         List<Estado> todosLosEstados = db.obtenerEstados();
+         List<Estado> todosLosEstados = EstadoRepository.obtenerTodos();
          Estado estadoOnline = null;
  
          for (Estado estado : todosLosEstados) {
@@ -288,7 +288,7 @@ package com.mycompany.ppai.controllers;
                  break;
              }
          }
-         List<Sismografo> todosLosSismografos = db.obtenerSismografos();
+         List<Sismografo> todosLosSismografos = SismografoRepository.obtenerTodos();
          this.selecOrdenInspeccion.actualizarSismografoOnline(this.fechaHoraActual, this.empleadoLogeado, estadoOnline, todosLosSismografos);
          // No se notifica ni por pantalla ni por mail
      }
@@ -304,7 +304,7 @@ package com.mycompany.ppai.controllers;
      }
  
      public void notificarResponsablesDeReparacion(String cuerpoNotificacion) {
-         List<Empleado> todosLosEmpleados = db.obtenerEmpleados();
+         List<Empleado> todosLosEmpleados = EmpleadoRepository.obtenerTodos();
          List<String> mailsResponsables = new ArrayList<>();
  
          for (Empleado empleado : todosLosEmpleados) {
