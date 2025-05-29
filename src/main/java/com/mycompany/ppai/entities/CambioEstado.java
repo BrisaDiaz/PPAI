@@ -27,7 +27,7 @@ package com.mycompany.ppai.entities;
   
   public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
   this(estado, fechaHoraInicio, responsableDeInspeccion); // Llamar al constructor general
-  this.registrarMotivosFueraDeServicio(motivosFueraServicio);
+  this.crearMotivosFueraDeServicio(motivosFueraServicio);
   }
  
 
@@ -90,7 +90,7 @@ package com.mycompany.ppai.entities;
   *
   * @param motivosFueraServicio Lista de pares (MotivoTipo, Comentario) que describen los motivos.
   */
-  public void registrarMotivosFueraDeServicio(List<Object[]> motivosFueraServicio) {
+  public void crearMotivosFueraDeServicio(List<Object[]> motivosFueraServicio) {
     this.motivoFueraServicio = new ArrayList<>();
 
     if (motivosFueraServicio != null) {

@@ -25,7 +25,7 @@ package com.mycompany.ppai.controllers;
      private String observacionCierreOrden;
      private PantallaCierreOrdenInspeccion pantallaCierreOrdenInspeccion;
      private InterfazNotificacion interfazNotificacion;
-     private List<MonitorCCRS> pantallaCCRS;
+     private MonitorCCRS monitorCCRS;
      private Sesion sesionActual;
      private Empleado empleadoLogeado;
      private boolean ponerSismografoFueraServicio;
@@ -37,9 +37,9 @@ package com.mycompany.ppai.controllers;
      private boolean validacionComentariosMotivosOk;
  
      // Constructor
-     public GestorCierreOrdenInspeccion(Sesion sesionActual, InterfazNotificacion interfazNotificacion, List<MonitorCCRS> pantallaCCRS) {
+     public GestorCierreOrdenInspeccion(Sesion sesionActual, InterfazNotificacion interfazNotificacion, MonitorCCRS monitorCCRS) {
          this.interfazNotificacion = Objects.requireNonNull(interfazNotificacion, "La interfaz de notificación no puede ser nula");
-         this.pantallaCCRS = Objects.requireNonNull(pantallaCCRS, "La lista de pantallas CCRS no puede ser nula");
+         this.monitorCCRS = Objects.requireNonNull(monitorCCRS, "La lista de pantallas CCRS no puede ser nula");
          this.sesionActual = Objects.requireNonNull(sesionActual, "La sesión actual no puede ser nula");
          this.motivosFueraServicio = new ArrayList<>();
          this.ponerSismografoFueraServicio = false; // Default to not putting it out of service
@@ -310,9 +310,7 @@ package com.mycompany.ppai.controllers;
      }
  
      public void publicarEnMonitoresCCRS(String cuerpoNotificacion) {
-         for (MonitorCCRS pantalla : pantallaCCRS) {
-             pantalla.publicar(cuerpoNotificacion);
-         }
+        monitorCCRS.publicar(cuerpoNotificacion);
      }
  
      public void finCU() {

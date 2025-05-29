@@ -55,9 +55,7 @@ public class PPAI {
             OrdenDeInspeccionRepository.guardarTodos(List.of(orden1, orden2));
 
             // Crear Monitores CCRS
-            MonitorCCRS monitor1 = new MonitorCCRS("Monitor CCRS 1");
-            MonitorCCRS monitor2 = new MonitorCCRS("Monitor CCRS 2");
-            List<MonitorCCRS> pantallasCCRS = List.of(monitor1, monitor2);
+            MonitorCCRS monitor = new MonitorCCRS();
 
             // Crear Interfaz de Notificación
             InterfazNotificacion interfazNotificacion = new InterfazNotificacion();
@@ -69,7 +67,7 @@ public class PPAI {
             MotivoTipoRespository.guardarTodos(List.of(motivoTipo1, motivoTipo2));
 
             // Crear Gestor y Pantalla
-            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, interfazNotificacion, pantallasCCRS);
+            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, interfazNotificacion, monitor);
             PantallaCierreOrdenInspeccion pantalla = new PantallaCierreOrdenInspeccion(gestor);
             gestor.setPantallaCierreOrdenInspeccion(pantalla);
             

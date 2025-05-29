@@ -111,14 +111,14 @@ package com.mycompany.ppai.entities;
   Estado estadoFueraServicio, List<Object[]> motivosFueraServicio) {
 
   this.finalizarCambioEstadoActual(fechaHoraActual);
-  this.registrarCambioEstado(estadoFueraServicio, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
+  this.crearCambioEstado(estadoFueraServicio, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
   }
  
   public void ponerOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
   Estado estadoOnline) {
 
   this.finalizarCambioEstadoActual(fechaHoraActual);
-  this.registrarCambioEstado(estadoOnline, fechaHoraActual, responsableDeInspeccion);
+  this.crearCambioEstado(estadoOnline, fechaHoraActual, responsableDeInspeccion);
   }
 
   public void finalizarCambioEstadoActual(LocalDateTime fechaHoraFin) {
@@ -136,8 +136,8 @@ package com.mycompany.ppai.entities;
     cambioEstadoActual.setFechaHoraFin(fechaHoraFin);
   }
  
-  public void registrarCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
-  registrarCambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, null);
+  public void crearCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
+  crearCambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, null);
   }
  
 
@@ -151,7 +151,7 @@ package com.mycompany.ppai.entities;
   * @param motivosFueraServicio Una lista de pares (MotivoTipo, Comentario) para
   * cuando el sismógrafo pasa a "Fuera de Servicio".
   */
-  public void registrarCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual,
+  public void crearCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual,
     Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
 
     if (nuevoEstado != null && !nuevoEstado.equals(this.estadoActual)) {
