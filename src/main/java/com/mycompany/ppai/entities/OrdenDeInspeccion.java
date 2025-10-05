@@ -3,107 +3,78 @@ package com.mycompany.ppai.entities;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.List;
-import com.google.gson.JsonObject; 
+import com.google.gson.JsonObject;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
 public class OrdenDeInspeccion {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
+    @Column(nullable=false)
     private LocalDateTime fechaHoraInicio;
-    private LocalDateTime fechaHoraFinalizacion;
-    private LocalDateTime fechaHoraCierre;
+
+    @Column(nullable=false)
     private Integer numeroOrden;
-    private String observacionCierre;
+
+    @ManyToOne
+    @JoinColumn(name = "estado_id", nullable=false)
     private Estado estado;
+
+    @ManyToOne
+    @JoinColumn(name = "empleado_id", nullable=false)
     private Empleado empleado;
+
+    @ManyToOne
+    @JoinColumn(name = "estacion_sismologica_id", nullable=false)
     private EstacionSismologica estacionSismologica;
 
+    private LocalDateTime fechaHoraFinalizacion;
+
+    private LocalDateTime fechaHoraCierre;
+
+    private String observacionCierre;
+
     // Constructor
-    public OrdenDeInspeccion(LocalDateTime fechaHoraInicio, Integer numeroOrden, Estado estado, Empleado empleado, EstacionSismologica estacionSismologica) {
-        this.fechaHoraInicio = Objects.requireNonNull(fechaHoraInicio, "La fecha y hora de inicio no pueden ser nulas");
-        this.numeroOrden = Objects.requireNonNull(numeroOrden, "El número de orden no puede ser nulo");
-        this.estado = Objects.requireNonNull(estado, "El estado no puede ser nulo");
-        this.empleado = Objects.requireNonNull(empleado, "El empleado no puede ser nulo");
-        this.estacionSismologica = Objects.requireNonNull(estacionSismologica, "La estación sismológica no puede ser nula");
-    }
+    public OrdenDeInspeccion(LocalDateTime fechaHoraInicio, Integer numeroOrden, Estado estado, Empleado empleado,
+            EstacionSismologica estacionSismologica) {
 
-    // Métodos Getters
-
-    public LocalDateTime getFechaHoraInicio() {
-        return fechaHoraInicio;
-    }
-
-    public LocalDateTime getFechaHoraFinalizacion() {
-        return fechaHoraFinalizacion;
-    }
-
-    public LocalDateTime getFechaHoraCierre() {
-        return fechaHoraCierre;
-    }
-
-    public Integer getNumeroOrden() {
-        return numeroOrden;
-    }
-
-    public String getObservacionCierre() {
-        return observacionCierre;
-    }
-
-    public Estado getEstado() {
-        return estado;
-    }
-
-    public Empleado getEmpleado() {
-        return empleado;
-    }
-
-    public EstacionSismologica getEstacionSismologica() {
-        return estacionSismologica;
-    }
-
-    // Métodos Setters
-
-    public void setFechaHoraInicio(LocalDateTime fechaHoraInicio) {
-        this.fechaHoraInicio = Objects.requireNonNull(fechaHoraInicio, "La fecha y hora de inicio no pueden ser nulas");
-    }
-
-    public void setFechaHoraFinalizacion(LocalDateTime fechaHoraFinalizacion) {
-        this.fechaHoraFinalizacion = fechaHoraFinalizacion;
-    }
-
-    public void setFechaHoraCierre(LocalDateTime fechaHoraCierre) {
-        this.fechaHoraCierre = fechaHoraCierre;
-    }
-
-    public void setNumeroOrden(Integer numeroOrden) {
-        this.numeroOrden = Objects.requireNonNull(numeroOrden, "El número de orden no puede ser nulo");
-    }
-
-    public void setObservacionCierre(String observacionCierre) {
-        this.observacionCierre = observacionCierre;
-    }
-
-    public void setEstado(Estado estado) {
-        this.estado = Objects.requireNonNull(estado, "El estado no puede ser nulo");
-    }
-
-    public void setEmpleado(Empleado empleado) {
-        this.empleado = Objects.requireNonNull(empleado, "El empleado no puede ser nulo");
-    }
-
-    public void setEstacionSismologica(EstacionSismologica estacionSismologica) {
-        this.estacionSismologica = Objects.requireNonNull(estacionSismologica, "La estación sismológica no puede ser nula");
+        this.fechaHoraInicio = fechaHoraInicio;
+        this.numeroOrden = numeroOrden;
+        this.estado = estado;
+        this.empleado = empleado;
+        this.estacionSismologica = estacionSismologica;
     }
 
     // Métodos de comportamiento
 
     public boolean esMiRI(Empleado empleado) {
-        return this.empleado.equals(empleado);
+        return this.empleado.getId().equals(empleado.getId());
     }
 
     public boolean estoyCompletamenteRealizada() {
         return this.estado.esCompletamenteRealizada();
     }
 
-    public JsonObject mostrarDatosOrdeneDeInspeccion(List<Sismografo> sismografos) { 
+    public JsonObject mostrarDatosOrdeneDeInspeccion(List<Sismografo> sismografos) {
         JsonObject datos = new JsonObject();
         datos.addProperty("numeroOrden", this.getNumeroOrden());
         datos.addProperty("fechaHoraFinalizacion", this.getFechaHoraFinalizacion().toString());
@@ -121,12 +92,12 @@ public class OrdenDeInspeccion {
 
     public void actualizarSismografoFueraServicio(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
     Estado estadoFueraServicio, List<Object[]> motivosFueraServicio,  List<Sismografo> sismografos) {
-        this.estacionSismologica.actualizarSismografoFueraServicio(fechaHoraActual, responsableDeInspeccion, estadoFueraServicio, motivosFueraServicio, sismografos);
+        this.getEstacionSismologica().actualizarSismografoFueraServicio(fechaHoraActual, responsableDeInspeccion, estadoFueraServicio, motivosFueraServicio, sismografos);
 
     }
 
     public void actualizarSismografoOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
     Estado estadoOnline, List<Sismografo> sismografos) {
-        this.estacionSismologica.actualizarSismografoOnline(fechaHoraActual, responsableDeInspeccion, estadoOnline, sismografos);
+        this.getEstacionSismologica().actualizarSismografoOnline(fechaHoraActual, responsableDeInspeccion, estadoOnline, sismografos);
     }
 }

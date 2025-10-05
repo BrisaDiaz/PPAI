@@ -1,164 +1,101 @@
 package com.mycompany.ppai.entities;
- 
 
- import java.time.LocalDateTime;
- import java.util.ArrayList;
- import java.util.List;
- import java.util.Objects;
- 
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
- public class Sismografo {
-  private LocalDateTime fechaAdquisicion;
-  private String identificadorSismografo;
-  private Integer nroSerie;
-  private EstacionSismologica estacionSismologica;
-  private List<CambioEstado> cambioEstado;
-  private Estado estadoActual;
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
+public class Sismografo {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-  // Constructor
-  public Sismografo(LocalDateTime fechaAdquisicion, String identificadorSismografo, Integer nroSerie,
-  EstacionSismologica estacionSismologica, Estado estadoInicial, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
+    @Column(nullable=false)
+    private LocalDateTime fechaAdquisicion;
 
-  this.fechaAdquisicion = Objects.requireNonNull(fechaAdquisicion, "La fecha de adquisición no puede ser nula");
-  this.identificadorSismografo = Objects.requireNonNull(identificadorSismografo, "El identificador no puede ser nulo");
-  this.nroSerie = Objects.requireNonNull(nroSerie, "El número de serie no puede ser nulo");
-  this.estacionSismologica = Objects.requireNonNull(estacionSismologica, "La estación sismológica no puede ser nula");
-  this.cambioEstado = new ArrayList<>();
-  this.estadoActual = Objects.requireNonNull(estadoInicial, "El estado inicial no puede ser nulo");
-  
-  // Registrar el estado inicial directamente en el constructor
-  CambioEstado cambioEstadoInicial = new CambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion, null); // Suponiendo el constructor de CambioEstado
-  this.cambioEstado.add(cambioEstadoInicial);
-  }
- 
+    @Column(nullable=false, unique=true)
+    private String identificadorSismografo;
 
-  // Getters
- 
+    @Column(nullable=false)
+    private Integer nroSerie;
 
-  public LocalDateTime getFechaAdquisicion() {
-  return fechaAdquisicion;
-  }
- 
+    @OneToOne
+    @JoinColumn(name = "estacion_sismologica_id", nullable=false)
+    private EstacionSismologica estacionSismologica;
 
-  public String getIdentificador() {
-  return identificadorSismografo;
-  }
- 
+    @OneToMany(mappedBy = "sismografo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CambioEstado> cambioEstado;
 
-  public Integer getNroSerie() {
-  return nroSerie;
-  }
- 
+    @ManyToOne
+    @JoinColumn(name = "estado_id", nullable=false)
+    private Estado estadoActual;
 
-  public EstacionSismologica getEstacionSismologica() {
-  return estacionSismologica;
-  }
- 
+    public Sismografo(LocalDateTime fechaAdquisicion, String identificadorSismografo, Integer nroSerie,
+    EstacionSismologica estacionSismologica, Estado estadoInicial, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
 
-  public List<CambioEstado> getCambioEstado() {
-  return cambioEstado;
-  }
- 
+        this.fechaAdquisicion = fechaAdquisicion;
+        this.identificadorSismografo = identificadorSismografo;
+        this.nroSerie = nroSerie;
+        this.estacionSismologica = estacionSismologica;
+        this.cambioEstado = new ArrayList<>();
+        this.estadoActual = estadoInicial;
 
-  public Estado getEstadoActual() {
-  return estadoActual;
-  }
- 
-
-  // Setters
- 
-
-  public void setFechaAdquisicion(LocalDateTime fechaAdquisicion) {
-  this.fechaAdquisicion = Objects.requireNonNull(fechaAdquisicion, "La fecha de adquisición no puede ser nula");
-  }
- 
-
-  public void setIdentificador(String identificadorSismografo) {
-  this.identificadorSismografo = Objects.requireNonNull(identificadorSismografo, "El identificador no puede ser nulo");
-  }
- 
-
-  public void setNroSerie(Integer nroSerie) {
-  this.nroSerie = Objects.requireNonNull(nroSerie, "El número de serie no puede ser nulo");
-  }
- 
-
-  public void setEstacionSismologica(EstacionSismologica estacionSismologica) {
-  this.estacionSismologica = Objects.requireNonNull(estacionSismologica, "La estación sismológica no puede ser nula");
-  }
- 
-
-  public void setCambioEstado(List<CambioEstado> cambioEstado) {
-  this.cambioEstado = Objects.requireNonNull(cambioEstado, "La lista de cambios de estado no puede ser nula");
-  }
- 
-
-
-  public void setEstadoActual(Estado estadoActual) {
-  this.estadoActual = Objects.requireNonNull(estadoActual, "El estado actual no puede ser nulo");
-  }
- 
-
-  // Métodos de comportamiento
- 
-
-  public boolean esMiEstacion(EstacionSismologica estacion) {
-  return this.estacionSismologica.equals(estacion);
-  }
- 
-
-  public void retirarDeServicio(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
-  Estado estadoFueraServicio, List<Object[]> motivosFueraServicio) {
-
-  this.finalizarCambioEstadoActual(fechaHoraActual);
-  this.crearCambioEstado(estadoFueraServicio, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
-  }
- 
-  public void ponerOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
-  Estado estadoOnline) {
-
-  this.finalizarCambioEstadoActual(fechaHoraActual);
-  this.crearCambioEstado(estadoOnline, fechaHoraActual, responsableDeInspeccion);
-  }
-
-  public void finalizarCambioEstadoActual(LocalDateTime fechaHoraFin) {
-    CambioEstado cambioEstadoActual = null;
-
-    for (CambioEstado cambioEstadoIterado : this.cambioEstado) {
-      if (cambioEstadoIterado.esCambioEstadoActual()) {
-        cambioEstadoActual = cambioEstadoIterado;
-        break;
-      }
+        this.crearCambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion, null);
     }
-    if (cambioEstadoActual == null) {
-      throw new IllegalStateException("No hay un cambio de estado actual para finalizar.");
-    }
-    cambioEstadoActual.setFechaHoraFin(fechaHoraFin);
-  }
- 
-  public void crearCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion) {
-  crearCambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, null);
-  }
- 
 
-  /**
-  * Registra un cambio de estado del sismógrafo, incluyendo los motivos de fuera de
-  * servicio.
-  *
-  * @param nuevoEstado El nuevo estado del sismógrafo.
-  * @param fechaHoraActual La fecha y hora del cambio.
-  * @param responsableDeInspeccion El empleado responsable de la inspección.
-  * @param motivosFueraServicio Una lista de pares (MotivoTipo, Comentario) para
-  * cuando el sismógrafo pasa a "Fuera de Servicio".
-  */
-  public void crearCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual,
-    Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
+    // Métodos de comportamiento
 
-    if (nuevoEstado != null && !nuevoEstado.equals(this.estadoActual)) {
-    
-    CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
-    this.cambioEstado.add(nuevoCambioEstado);
-    this.setEstadoActual(nuevoEstado);
+    public boolean esMiEstacion(EstacionSismologica estacion) {
+        return this.estacionSismologica.getId().equals(estacion.getId());
     }
-  }
- }
+
+    public void retirarDeServicio(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
+        Estado estadoFueraServicio, List<Object[]> motivosFueraServicio) {
+
+        this.finalizarCambioEstadoActual(fechaHoraActual);
+        this.crearCambioEstado(estadoFueraServicio, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
+    }
+
+    public void ponerOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion, Estado estadoOnline) {
+
+        this.finalizarCambioEstadoActual(fechaHoraActual);
+        this.crearCambioEstado(estadoOnline, fechaHoraActual, responsableDeInspeccion, new ArrayList<>()); // Pasamos null para motivos
+    }
+
+    public void finalizarCambioEstadoActual(LocalDateTime fechaHoraFin) {
+        CambioEstado cambioEstadoActual = null;
+
+        for (CambioEstado cambioEstadoIterado : this.getCambioEstado()) {
+            if (cambioEstadoIterado.getFechaHoraFin() == null) {
+                cambioEstadoActual = cambioEstadoIterado;
+                break;
+            }
+        }
+
+        if (cambioEstadoActual == null) {
+            System.err.println("Advertencia: No se encontró un cambio de estado actual sin fecha de fin.");
+            return;
+        }
+
+        cambioEstadoActual.setFechaHoraFin(fechaHoraFin);
+    }
+
+    public void crearCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual,
+            Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
+
+        // Si es el estado inicial o si el nuevo estado es diferente al actual
+        if (nuevoEstado != null && (this.estadoActual == null || !nuevoEstado.equals(this.estadoActual))) {
+            CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, this, motivosFueraServicio);
+
+            this.cambioEstado.add(nuevoCambioEstado);
+            this.setEstadoActual(nuevoEstado);
+        }
+    }
+}

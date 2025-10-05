@@ -1,31 +1,72 @@
 package com.mycompany.ppai.repositories;
 
-import java.util.ArrayList;
+import com.mycompany.ppai.entities.MotivoTipo;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 
-import com.mycompany.ppai.entities.MotivoTipo;
-
 public class MotivoTipoRespository {
-    private static final List<MotivoTipo> motivosTipo = new ArrayList<>();
+    private static MotivoTipoRespository instance = null;
+    private final EntityManager entityManager;
         
-    public static List<MotivoTipo> obtenerTodos() {
-        return motivosTipo;
+    private MotivoTipoRespository(EntityManager em) {
+        this.entityManager = em;
     }
 
-    public static void guardar(MotivoTipo motivoTipo) {
-        motivosTipo.add(motivoTipo);
-    }
-    
-    public static void guardarTodos(List<MotivoTipo> listaMotivoTipos) {
-        motivosTipo.addAll(listaMotivoTipos);
-    }
-
-    public static MotivoTipo obtenerPorDescripcion(String descripcion) {
-        for (MotivoTipo motivoTipo : motivosTipo) {
-            if (motivoTipo.getDescripcion().equalsIgnoreCase(descripcion)) {
-                return motivoTipo;
-            }
+    public static MotivoTipoRespository getInstance(EntityManager em) {
+        if (instance == null) {
+            instance = new MotivoTipoRespository(em);
         }
-        return null;
+        return instance;
+    }
+
+    public List<MotivoTipo> obtenerTodos() {
+        return entityManager.createQuery("SELECT m FROM MotivoTipo m", MotivoTipo.class)
+                .getResultList();
+    }
+
+    public MotivoTipo guardar(MotivoTipo motivoTipo) {
+        try {
+
+            entityManager.getTransaction().begin();
+            MotivoTipo mergedMotivo = entityManager.merge(motivoTipo);
+
+            entityManager.getTransaction().commit();
+            return mergedMotivo;
+        } catch (Exception e) {
+
+            if (entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw new RuntimeException("Error al guardar el MotivoTipo", e);
+        }
+    }
+
+    public void guardarTodos(List<MotivoTipo> listaMotivoTipos) {
+        try {
+
+            entityManager.getTransaction().begin();
+            for (MotivoTipo motivoTipo : listaMotivoTipos) {
+                entityManager.merge(motivoTipo);
+            }
+
+            entityManager.getTransaction().commit();
+        } catch (Exception e) {
+
+            if (entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw new RuntimeException("Error al guardar la lista de MotivoTipo", e);
+        }
+    }
+
+    public MotivoTipo obtenerPorDescripcion(String descripcion) {
+        try {
+            return entityManager.createQuery(
+                    "SELECT m FROM MotivoTipo m WHERE LOWER(m.descripcion) = LOWER(:desc)", MotivoTipo.class)
+                    .setParameter("desc", descripcion)
+                    .getSingleResult();
+        } catch (jakarta.persistence.NoResultException e) {
+            return null;
+        }
     }
 }

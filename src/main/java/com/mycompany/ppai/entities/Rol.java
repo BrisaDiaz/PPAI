@@ -1,40 +1,39 @@
 package com.mycompany.ppai.entities;
 
-import java.util.Objects; // Importar Objects para usar requireNonNull
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
 public class Rol {
-    private String nombre;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable=false)
+    private NombreRolEnum nombre;
+
+    @Column(nullable=false)
     private String descripcionRol;
-
-    public Rol(String nombre, String descripcionRol) {
-        // Usar requireNonNull para asegurar que los parámetros no sean nulos
-        this.nombre = Objects.requireNonNull(nombre, "El nombre del rol no puede ser nulo");
-        this.descripcionRol = Objects.requireNonNull(descripcionRol, "La descripción del rol no puede ser nula");
-    }
-
-    // Métodos Getters
-
-    public String getNombreRol() {
-        return nombre;
-    }
-
-    public String getDescripcionRol() {
-        return descripcionRol;
-    }
-
-    // Métodos Setters
-
-    public void setNombreRol(String nombre) {
-        this.nombre = Objects.requireNonNull(nombre, "El nombre del rol no puede ser nulo");
-    }
-
-    public void setDescripcionRol(String descripcionRol) {
-        this.descripcionRol = Objects.requireNonNull(descripcionRol, "La descripción del rol no puede ser nula");
-    }
 
     // Métodos de comportamiento
 
-    public boolean esResponsableDeReparacion() { // Corregido el tipo de retorno a boolean
-        return nombre.equals("Responsable de Reparación");
+    public boolean esResponsableDeReparacion() {
+        return nombre.equals(NombreRolEnum.RESPONSABLE_DE_REPARACION);
+    }
+    public boolean esResponsableDeInspeccion() {
+        return nombre.equals(NombreRolEnum.RESPONSABLE_DE_INSPECCION);
     }
 }

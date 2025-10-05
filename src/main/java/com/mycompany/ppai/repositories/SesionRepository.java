@@ -1,55 +1,57 @@
 package com.mycompany.ppai.repositories;
 
-import com.mycompany.ppai.entities.Estado;
+import com.mycompany.ppai.entities.Sesion;
+import com.mycompany.ppai.entities.Sismografo;
+
 import jakarta.persistence.EntityManager;
 import java.util.List;
 
-public class EstadoRepository {
-    private static EstadoRepository instance = null;
+public class SesionRepository {
+    private static SesionRepository instance = null;
     private final EntityManager entityManager;
         
-    private EstadoRepository(EntityManager em) {
+    private SesionRepository(EntityManager em) {
         this.entityManager = em;
     }
 
-    public static EstadoRepository getInstance(EntityManager em) {
+    public static SesionRepository getInstance(EntityManager em) {
         if (instance == null) {
-            instance = new EstadoRepository(em);
+            instance = new SesionRepository(em);
         }
         return instance;
     }
 
-    public List<Estado> obtenerTodos() {
-        return entityManager.createQuery("SELECT e FROM Estado e", Estado.class)
+    public List<Sesion> obtenerTodos() {
+        return entityManager.createQuery("SELECT s FROM Sesion s", Sesion.class)
                 .getResultList();
     }
 
-    public Estado guardar(Estado estado) {
+    public Sesion guardar(Sesion sesion) {
         try {
             entityManager.getTransaction().begin();
-            Estado mergedOrden = entityManager.merge(estado);
+            Sesion mergedSesion = entityManager.merge(sesion);
             entityManager.getTransaction().commit();
-            return mergedOrden;
+            return mergedSesion;
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().rollback();
             }
-            throw new RuntimeException("Error el guardar el Estado", e);
+            throw new RuntimeException("Error al guardar la Sesion", e);
         }
     }
-
-    public void guardarTodos(List<Estado> listaEstados) {
+    
+    public void guardarTodos(List<Sesion> listaSesiones) {
         try {
             entityManager.getTransaction().begin();
-            for (Estado orden : listaEstados) {
-                entityManager.merge(orden);
+            for (Sesion sesion : listaSesiones) {
+                entityManager.merge(sesion);
             }
             entityManager.getTransaction().commit();
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().rollback();
             }
-            throw new RuntimeException("Error al guardar la lista de Estado", e);
+            throw new RuntimeException("Error al guardar la lista de Sesiones", e);
         }
     }
 }

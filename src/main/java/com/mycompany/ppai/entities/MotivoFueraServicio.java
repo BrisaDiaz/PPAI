@@ -1,35 +1,33 @@
 package com.mycompany.ppai.entities;
- 
 
- import java.util.Objects;
- 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
 
- public class MotivoFueraServicio {
-  private String comentario;
-  private MotivoTipo motivoTipo;
- 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
+public class MotivoFueraServicio {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    // Constructor
-  public MotivoFueraServicio(String comentario, MotivoTipo motivoTipo) {
-  this.comentario = Objects.requireNonNull(comentario, "El comentario no puede ser nulo");
-  this.motivoTipo = Objects.requireNonNull(motivoTipo, "El tipo de motivo no puede ser nulo");
-  }
- 
-    // Getters
-  public String getComentario() {
-  return comentario;
-  }
- 
-  public MotivoTipo getMotivoTipo() {
-  return motivoTipo;
-  }
- 
-    // Setters
-  public void setComentario(String comentario) {
-  this.comentario = Objects.requireNonNull(comentario, "El comentario no puede ser nulo");
-  }
- 
-  public void setMotivoTipo(MotivoTipo motivoTipo) {
-  this.motivoTipo = Objects.requireNonNull(motivoTipo, "El tipo de motivo no puede ser nulo");
-  }
- }
+    @Column(nullable=false)
+    private String comentario;
+
+    @ManyToOne
+    @JoinColumn(name = "motivo_tipo_id", nullable=false)
+    private MotivoTipo motivoTipo;
+}

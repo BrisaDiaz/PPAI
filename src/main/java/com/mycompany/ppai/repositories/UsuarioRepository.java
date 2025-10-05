@@ -1,55 +1,55 @@
 package com.mycompany.ppai.repositories;
 
-import com.mycompany.ppai.entities.Estado;
+import com.mycompany.ppai.entities.Usuario;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 
-public class EstadoRepository {
-    private static EstadoRepository instance = null;
+public class UsuarioRepository {
+    private static UsuarioRepository instance = null;
     private final EntityManager entityManager;
         
-    private EstadoRepository(EntityManager em) {
+    private UsuarioRepository(EntityManager em) {
         this.entityManager = em;
     }
 
-    public static EstadoRepository getInstance(EntityManager em) {
+    public static UsuarioRepository getInstance(EntityManager em) {
         if (instance == null) {
-            instance = new EstadoRepository(em);
+            instance = new UsuarioRepository(em);
         }
         return instance;
     }
 
-    public List<Estado> obtenerTodos() {
-        return entityManager.createQuery("SELECT e FROM Estado e", Estado.class)
+    public List<Usuario> obtenerTodos() {
+        return entityManager.createQuery("SELECT u FROM Usuario u", Usuario.class)
                 .getResultList();
     }
 
-    public Estado guardar(Estado estado) {
+    public Usuario guardar(Usuario usuario) {
         try {
             entityManager.getTransaction().begin();
-            Estado mergedOrden = entityManager.merge(estado);
+            Usuario mergedUsuario = entityManager.merge(usuario);
             entityManager.getTransaction().commit();
-            return mergedOrden;
+            return mergedUsuario;
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().rollback();
             }
-            throw new RuntimeException("Error el guardar el Estado", e);
+            throw new RuntimeException("Error al guardar el Usuario", e);
         }
     }
-
-    public void guardarTodos(List<Estado> listaEstados) {
+    
+    public void guardarTodos(List<Usuario> listaUsuarios) {
         try {
             entityManager.getTransaction().begin();
-            for (Estado orden : listaEstados) {
-                entityManager.merge(orden);
+            for (Usuario usuario : listaUsuarios) {
+                entityManager.merge(usuario);
             }
             entityManager.getTransaction().commit();
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().rollback();
             }
-            throw new RuntimeException("Error al guardar la lista de Estado", e);
+            throw new RuntimeException("Error al guardar la lista de Usuarios", e);
         }
     }
 }

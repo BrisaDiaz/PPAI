@@ -1,58 +1,160 @@
 package com.mycompany.ppai;
 
+import com.mycompany.ppai.entities.*;
+import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
 import com.mycompany.ppai.boundaries.InterfazNotificacion;
 import com.mycompany.ppai.boundaries.MonitorCCRS;
+import com.mycompany.ppai.repositories.*;
 import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
-import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
-import com.mycompany.ppai.entities.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Persistence;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.mycompany.ppai.repositories.*;
 
 public class PPAI {
 
     public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(() -> {
-            // Crear roles
-            Rol rolRI = new Rol("Responsable de Inspección", "Realiza inspecciones");
-            Rol rolReparacion = new Rol("Responsable de Reparación", "Repara sismógrafos");
+        
+        EntityManager em = null;
+        try {
+        
+            em = Persistence
+                .createEntityManagerFactory("sismos")
+                .createEntityManager();
+    
+            // Creación de instancias de Repositorio (método Singleton)
+            EstadoRepository estadoRepository = EstadoRepository.getInstance(em);
+            OrdenDeInspeccionRepository orderRepository = OrdenDeInspeccionRepository.getInstance(em);
+            SismografoRepository sismografoRepository = SismografoRepository.getInstance(em);
+            EmpleadoRepository empleadoRepository = EmpleadoRepository.getInstance(em);
+            MotivoTipoRespository motivoTipoRepository = MotivoTipoRespository.getInstance(em);
+            RolRepository rolRepository = RolRepository.getInstance(em);
+            UsuarioRepository usuarioRepository = UsuarioRepository.getInstance(em);
+            SesionRepository sesionRepository = SesionRepository.getInstance(em);
+            EstacionSismologicaRepository estacionRepository = EstacionSismologicaRepository.getInstance(em);
+            
+            // Crear Roles
+            Rol rolRI = Rol.builder()
+            .nombre( NombreRolEnum.RESPONSABLE_DE_INSPECCION)
+            .descripcionRol("Realiza inspecciones")
+            .build();
+
+            Rol rolReparacion = Rol.builder()
+            .nombre( NombreRolEnum.RESPONSABLE_DE_REPARACION)
+            .descripcionRol("Realiza inspecciones")
+            .build();
+
+            rolRepository.guardarTodos(List.of(rolRI, rolReparacion));
 
             // Crear empleados
-            Empleado empleadoRI = new Empleado("Juan", "Pérez", "123456789", "juan.perez@example.com", rolRI);
-            Empleado empleadoReparacion1 = new Empleado("Ana", "Gómez", "987654321", "ana.gomez@example.com", rolReparacion);
-            EmpleadoRepository.guardarTodos(List.of(empleadoRI, empleadoReparacion1));
+            Empleado empleadoRI = Empleado.builder()
+            .nombre("Juan")
+            .apellido("Pérez")
+            .telefono("123456789")
+            .mail("juan.perez@example.com")
+            .rol(rolRI)
+            .build();
+
+            Empleado empleadoReparacion = Empleado.builder()
+            .nombre("Ana")
+            .apellido("Gómez")
+            .telefono("987654321")
+            .mail("ana.gomez@example.com")
+            .rol(rolReparacion)
+            .build();
+
+            empleadoRepository.guardarTodos(List.of(empleadoRI, empleadoReparacion));
 
             // Crear usuarios
-            Usuario usuarioRI = new Usuario("jperez", "password", empleadoRI);
+            Usuario usuarioRI = Usuario.builder()
+            .nombreUsuario("jperez")
+            .constraseña("password")
+            .empleado(empleadoRI)
+            .build();
+
+            usuarioRepository.guardar(usuarioRI);
 
             // Crear sesión
-            Sesion sesion = new Sesion(LocalDateTime.now().minusHours(1), usuarioRI);
-
+            Sesion sesion = Sesion.builder()
+            .fechaHoraDesde(LocalDateTime.now().minusHours(1))
+            .usuario(usuarioRI)
+            .build();
+            
+            sesionRepository.guardar(sesion);
+            
             // Crear estados
-            Estado estadoCompletamenteRealizada = new Estado("Completamente Realizada", "Orden de Inspección");
-            Estado estadoCerradaOrden = new Estado("Cerrada", "Orden de Inspección");
-            Estado estadoFueraDeServicioSismografo = new Estado("Fuera de Servicio", "Sismógrafo");
-            Estado estadoOnlineSismografo = new Estado("Online", "Sismógrafo");
+            Estado estadoCompletamenteRealizada = Estado.builder()
+            .nombreEstado( NombreEstadoEnum.COMPLETAMENTE_REALIZADA)
+            .ambito(AmbitoEstadoEnum.ORDEN_DE_INSPECCION)
+            .build();
+            
+            Estado estadoCerradaOrden = Estado.builder()
+            .nombreEstado( NombreEstadoEnum.CERRADA)
+            .ambito(AmbitoEstadoEnum.ORDEN_DE_INSPECCION)
+            .build();
+            
+            Estado estadoFueraDeServicioSismografo = Estado.builder()
+            .nombreEstado( NombreEstadoEnum.FUERA_DE_SERVICIO)
+            .ambito(AmbitoEstadoEnum.SISMOGRAFO)
+            .build();
+            
+            Estado estadoOnlineSismografo = Estado.builder()
+            .nombreEstado( NombreEstadoEnum.ONLINE)
+            .ambito(AmbitoEstadoEnum.SISMOGRAFO)
+            .build();
 
-            EstadoRepository.guardarTodos(List.of(estadoCompletamenteRealizada, estadoCerradaOrden, estadoFueraDeServicioSismografo, estadoOnlineSismografo));
+            estadoRepository.guardarTodos(List.of(estadoCompletamenteRealizada, estadoCerradaOrden, estadoFueraDeServicioSismografo, estadoOnlineSismografo));
 
             // Crear estaciones sismológicas
-            EstacionSismologica estacion1 = new EstacionSismologica("Estación Central", "ESC01", "DOC123", LocalDateTime.now().minusDays(30), -34.6037F, -58.3816F, 1);
-            EstacionSismologica estacion2 = new EstacionSismologica("Estación Norte", "ESN02", "DOC456", LocalDateTime.now().minusDays(25), -33.0000F, -59.0000F, 2);
+            EstacionSismologica estacion1 = EstacionSismologica.builder()
+            .nombre("Estación Central")
+            .codigoEstacion("ESC01")
+            .documentoCertificacionAdq("DOC123")
+            .fechaSolicitudCertificacion(LocalDateTime.now().minusDays(30))
+            .latitud(-34.6037F)
+            .longitud(-58.3816F)
+            .nroCertificacionAdquisicion(1)
+            .build();
+
+            EstacionSismologica estacion2 = EstacionSismologica.builder()
+            .nombre("Estación Norte")
+            .codigoEstacion("ESN02")
+            .documentoCertificacionAdq("DOC456")
+            .fechaSolicitudCertificacion(LocalDateTime.now().minusDays(25))
+            .latitud(-33.0000F)
+            .longitud(-59.0000F)
+            .nroCertificacionAdquisicion(2)
+            .build();
+
+            estacionRepository.guardarTodos(List.of(estacion1, estacion2));
 
             // Crear sismógrafos
             Sismografo sismografo1 = new Sismografo(LocalDateTime.now().minusYears(2), "SMG001", 1001, estacion1, estadoOnlineSismografo, LocalDateTime.now(), empleadoRI);
             Sismografo sismografo2 = new Sismografo(LocalDateTime.now().minusYears(1), "SMG002", 2002, estacion2, estadoOnlineSismografo, LocalDateTime.now(), empleadoRI);
-            
-            SismografoRepository.guardarTodos(List.of(sismografo1, sismografo2));
+
+            sismografoRepository.guardarTodos(List.of(sismografo1, sismografo2));
 
             // Crear órdenes de inspección COMPLETAMENTE REALIZADAS
             OrdenDeInspeccion orden1 = new OrdenDeInspeccion(LocalDateTime.now().minusDays(7), 1, estadoCompletamenteRealizada, empleadoRI, estacion1);
             orden1.setFechaHoraFinalizacion(LocalDateTime.now().minusDays(7).plusHours(3));
             OrdenDeInspeccion orden2 = new OrdenDeInspeccion(LocalDateTime.now().minusDays(5), 2, estadoCompletamenteRealizada, empleadoRI, estacion2);
             orden2.setFechaHoraFinalizacion(LocalDateTime.now().minusDays(5).plusHours(2));
+
+            orderRepository.guardarTodos(List.of(orden1, orden2));
+
+            // Crear Motivos de Fuera de Servicio
+            MotivoTipo motivoTipo1 = MotivoTipo.builder()
+            .descripcion("Falla de energía")
+            .build();
+
+            MotivoTipo motivoTipo2 = MotivoTipo.builder()
+            .descripcion("Problema de sensor")
+            .build();
+
+            motivoTipoRepository.guardarTodos(List.of(motivoTipo1, motivoTipo2));
             
-            OrdenDeInspeccionRepository.guardarTodos(List.of(orden1, orden2));
+            System.out.println("--- DATOS DE INICIALIZACIÓN GUARDADOS EXITOSAMENTE ---");
+
 
             // Crear Monitores CCRS
             MonitorCCRS monitor = new MonitorCCRS();
@@ -60,18 +162,19 @@ public class PPAI {
             // Crear Interfaz de Notificación
             InterfazNotificacion interfazNotificacion = new InterfazNotificacion();
 
-            // Crear Motivos de Fuera de Servicio
-            MotivoTipo motivoTipo1 = new MotivoTipo("Falla de energía");
-            MotivoTipo motivoTipo2 = new MotivoTipo("Problema de sensor");
+            // Crear Gestor y Pantalla (Inyección manual)
+            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, interfazNotificacion, monitor,
+                                        estadoRepository, orderRepository, sismografoRepository, empleadoRepository,
+                                        motivoTipoRepository);
             
-            MotivoTipoRespository.guardarTodos(List.of(motivoTipo1, motivoTipo2));
-
-            // Crear Gestor y Pantalla
-            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, interfazNotificacion, monitor);
             PantallaCierreOrdenInspeccion pantalla = new PantallaCierreOrdenInspeccion(gestor);
             gestor.setPantallaCierreOrdenInspeccion(pantalla);
-            
+
             pantalla.opcionCerrarOrdenDeInspeccion();
-        });
+            
+        } catch (Exception e) {
+            System.err.println("Ocurrió un error en la aplicación principal:");
+            e.printStackTrace();
+        }
     }
 }

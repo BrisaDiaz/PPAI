@@ -5,107 +5,93 @@ package com.mycompany.ppai.entities;
  import java.util.ArrayList;
  import java.util.List;
  import java.util.Objects;
- 
 
- public class CambioEstado {
-  private LocalDateTime fechaHoraInicio;
-  private LocalDateTime fechaHoraFin;
-  private Estado estado;
-  private List<MotivoFueraServicio> motivoFueraServicio;
-  private Empleado responsableDeInspeccion;
- 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-  // Constructor para un CambioEstado general. 
-  public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion) {
-  this.estado = Objects.requireNonNull(estado, "El estado no puede ser nulo");
-  this.fechaHoraInicio = Objects.requireNonNull(fechaHoraInicio, "La fecha y hora de inicio no puede ser nula");
-  this.responsableDeInspeccion = Objects.requireNonNull(responsableDeInspeccion, "El responsable de la inspección no puede ser nulo");
-  }
- 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
+public class CambioEstado {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-  // Constructor para un CambioEstado cuando el sismógrafo se pone Fuera de Servicio.
-  
-  public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
-  this(estado, fechaHoraInicio, responsableDeInspeccion); // Llamar al constructor general
-  this.crearMotivosFueraDeServicio(motivosFueraServicio);
-  }
- 
+    @Column(nullable=false)
+    private LocalDateTime fechaHoraInicio;
 
-  public LocalDateTime getFechaHoraInicio() {
-  return fechaHoraInicio;
-  }
- 
+    @ManyToOne
+    @JoinColumn(name = "estado_id", nullable=false)
+    private Estado estado;
 
-  public void setFechaHoraInicio(LocalDateTime fechaHoraInicio) {
-  this.fechaHoraInicio = Objects.requireNonNull(fechaHoraInicio, "La fecha y hora de inicio no puede ser nula");
-  }
- 
+    @ManyToOne
+    @JoinColumn(name = "responsable_id", nullable=false)
+    private Empleado responsableDeInspeccion;
 
-  public LocalDateTime getFechaHoraFin() {
-  return fechaHoraFin;
-  }
- 
+    @ManyToOne
+    @JoinColumn(name = "sismografo_id", nullable=false)
+    private Sismografo sismografo;
 
-  public void setFechaHoraFin(LocalDateTime fechaHoraFin) {
-  this.fechaHoraFin = fechaHoraFin;
-  }
- 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(
+        name = "cambio_estado_motivo",
+        joinColumns = @JoinColumn(name = "cambio_estado_id"),
+        inverseJoinColumns = @JoinColumn(name = "motivo_fuera_servicio_id")
+    )
+    private List<MotivoFueraServicio> motivoFueraServicio;
 
-  public Estado getEstado() {
-  return estado;
-  }
- 
+    private LocalDateTime fechaHoraFin;
 
-  public void setEstado(Estado estado) {
-  this.estado = Objects.requireNonNull(estado, "El estado no puede ser nulo");
-  }
- 
+    // Constructor para un CambioEstado general.
+    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, Sismografo sismografo) {
+      this.estado = estado;
+      this.fechaHoraInicio = fechaHoraInicio;
+      this.responsableDeInspeccion = responsableDeInspeccion;
+      this.sismografo = sismografo;
+    }
 
-  public List<MotivoFueraServicio> getMotivoFueraServicio() {
-  return motivoFueraServicio;
-  }
- 
+    // Constructor para un CambioEstado cuando el sismógrafo se pone Fuera de Servicio.
+    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, Sismografo sismografo, List<Object[]> motivosFueraServicio) {
+      this(estado, fechaHoraInicio, responsableDeInspeccion, sismografo); // Llamar al constructor general
+      this.crearMotivosFueraDeServicio(motivosFueraServicio);
+    }
 
-  public void setMotivoFueraServicio(List<MotivoFueraServicio> motivoFueraServicio) {
-  this.motivoFueraServicio = motivoFueraServicio;
-  }
- 
 
-  public Empleado getResponsableDeInspeccion() {
-  return responsableDeInspeccion;
-  }
- 
+    // Métodos de comportamiento
 
-  public void setResponsableDeInspeccion(Empleado responsableDeInspeccion) {
-  this.responsableDeInspeccion = Objects.requireNonNull(responsableDeInspeccion,
-  "El responsable de la inspección no puede ser nulo");
-  }
- 
+    public void crearMotivosFueraDeServicio(List<Object[]> motivosFueraServicio) {
+      this.motivoFueraServicio = new ArrayList<>();
 
-  // Métodos de comportamiento
- 
+      if (motivosFueraServicio != null) {
 
-  /**
-  * Registra los motivos por los que el sismógrafo se puso Fuera de Servicio.
-  *
-  * @param motivosFueraServicio Lista de pares (MotivoTipo, Comentario) que describen los motivos.
-  */
-  public void crearMotivosFueraDeServicio(List<Object[]> motivosFueraServicio) {
-    this.motivoFueraServicio = new ArrayList<>();
+        for (Object[] motivoData : motivosFueraServicio) {
+          MotivoTipo tipo = (MotivoTipo) motivoData[0];
+          String comentario = (String) motivoData[1];
 
-    if (motivosFueraServicio != null) {
-
-      for (Object[] motivoData : motivosFueraServicio) {
-        MotivoTipo tipo = (MotivoTipo) motivoData[0];
-        String comentario = (String) motivoData[1];
-
-        MotivoFueraServicio motivo = new MotivoFueraServicio(comentario, tipo);
-        this.motivoFueraServicio.add(motivo);
+          MotivoFueraServicio motivo = new MotivoFueraServicio(null, comentario, tipo);
+          this.motivoFueraServicio.add(motivo);
+        }
       }
     }
-  }
-  
-  public boolean esCambioEstadoActual() {
-    return this.fechaHoraFin == null;
-  }
- }
+
+    public boolean esCambioEstadoActual() {
+      return this.fechaHoraFin == null;
+    }
+}

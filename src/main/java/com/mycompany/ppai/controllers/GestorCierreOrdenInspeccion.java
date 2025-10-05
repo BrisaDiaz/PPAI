@@ -9,14 +9,19 @@ package com.mycompany.ppai.controllers;
  import com.mycompany.ppai.boundaries.InterfazNotificacion;
  import com.mycompany.ppai.boundaries.MonitorCCRS;
  import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
+
  import java.time.LocalDateTime;
  import java.util.Objects;
  import java.util.List;
+
  import com.google.gson.JsonObject;
+
  import java.util.ArrayList;
  import java.util.stream.Collectors;
 
  import com.mycompany.ppai.repositories.*;
+
+import jakarta.persistence.EntityManager;
 
 
  public class GestorCierreOrdenInspeccion {
@@ -30,6 +35,11 @@ package com.mycompany.ppai.controllers;
      private Empleado empleadoLogeado;
      private boolean ponerSismografoFueraServicio;
      private List<Object[]> motivosFueraServicio;
+     private static EstadoRepository estadoRepository;
+     private static OrdenDeInspeccionRepository orderRepository;
+     private static SismografoRepository sismografoRepository;
+     private static EmpleadoRepository empleadoRepository;
+     private static MotivoTipoRespository motivoTipoRepository;
 
      /// atributos de validación
      private boolean validacionObservacionOk;
@@ -37,15 +47,24 @@ package com.mycompany.ppai.controllers;
      private boolean validacionComentariosMotivosOk;
  
      // Constructor
-     public GestorCierreOrdenInspeccion(Sesion sesionActual, InterfazNotificacion interfazNotificacion, MonitorCCRS monitorCCRS) {
-         this.interfazNotificacion = Objects.requireNonNull(interfazNotificacion, "La interfaz de notificación no puede ser nula");
-         this.monitorCCRS = Objects.requireNonNull(monitorCCRS, "La lista de pantallas CCRS no puede ser nula");
-         this.sesionActual = Objects.requireNonNull(sesionActual, "La sesión actual no puede ser nula");
+     public GestorCierreOrdenInspeccion(Sesion sesionActual, InterfazNotificacion interfazNotificacion,
+             MonitorCCRS monitorCCRS, EstadoRepository estadoRepository, OrdenDeInspeccionRepository orderRepository, 
+             SismografoRepository sismografoRepository, EmpleadoRepository empleadoRepository,
+             MotivoTipoRespository motivoTipoRepository) {
+         
+         this.interfazNotificacion = interfazNotificacion;
+         this.monitorCCRS = monitorCCRS;
+         this.sesionActual = sesionActual;
          this.motivosFueraServicio = new ArrayList<>();
-         this.ponerSismografoFueraServicio = false; // Default to not putting it out of service
+         this.ponerSismografoFueraServicio = false;
          this.validacionObservacionOk = false;
          this.validacionSelecMotivoOk = false;
          this.validacionComentariosMotivosOk = false;
+         this.estadoRepository = estadoRepository;
+         this.orderRepository = orderRepository;
+         this.sismografoRepository = sismografoRepository;
+         this.empleadoRepository = empleadoRepository;
+         this.motivoTipoRepository = motivoTipoRepository;
      }
  
      public boolean esPonerSismografoFueraDeServicio() {
@@ -81,8 +100,8 @@ package com.mycompany.ppai.controllers;
      }
  
      public List<JsonObject> mostrarInfoOrdenesInspeccion() {
-         List<OrdenDeInspeccion> ordenes = OrdenDeInspeccionRepository.obtenerTodos();
-         List<Sismografo> sismografos = SismografoRepository.obtenerTodos();
+         List<OrdenDeInspeccion> ordenes = orderRepository.obtenerTodos();
+         List<Sismografo> sismografos = sismografoRepository.obtenerTodos();
          List<JsonObject> inforOrdenes = new ArrayList<>();
 
          for (OrdenDeInspeccion orden : ordenes) {
@@ -104,7 +123,7 @@ package com.mycompany.ppai.controllers;
  
      // Este método se llama cuando el usuario selecciona una orden de inspección para cerrar (ejecutado desde pantallaCierreOrdenInspeccion).
      public void tomarSelecOrdenInspeccion(Integer numeroOrden) {
-         this.selecOrdenInspeccion = OrdenDeInspeccionRepository.obtenerPorNumero(numeroOrden);
+         this.selecOrdenInspeccion = orderRepository.obtenerPorNumero(numeroOrden);
          this.pantallaCierreOrdenInspeccion.solicitarObservacionCierreOrden();
      }
  
@@ -122,7 +141,7 @@ package com.mycompany.ppai.controllers;
      }
  
      public List<String> mostrarTiposMotivoFueraDeServicio() {
-         List<MotivoTipo> todosMotivoTipo = MotivoTipoRespository.obtenerTodos();
+         List<MotivoTipo> todosMotivoTipo = motivoTipoRepository.obtenerTodos();
          return todosMotivoTipo.stream().map(MotivoTipo::getDescripcion).collect(Collectors.toList());
      }
  
@@ -138,7 +157,7 @@ package com.mycompany.ppai.controllers;
              for (String[] motivo : motivosSeleccionados) {
                  String motivoTipoDescripcion = motivo[0];
                  String motivoDescripcion = motivo[1];
-                 MotivoTipo motivoTipo = MotivoTipoRespository.obtenerPorDescripcion(motivoTipoDescripcion);
+                 MotivoTipo motivoTipo = motivoTipoRepository.obtenerPorDescripcion(motivoTipoDescripcion);
                  if (motivoTipo != null) {
                      this.motivosFueraServicio.add(new Object[]{motivoTipo, motivoDescripcion});
                  }
@@ -180,11 +199,14 @@ package com.mycompany.ppai.controllers;
              if (!this.ponerSismografoFueraServicio) {
                 // Método para poner el sismógrafo online (A2)
                 this.actualizarSismografoAOnline();
-                 mensajeCierre += " Sismógrafo se mantiene online.";
+                 mensajeCierre += " El sismógrafo se mantiene online.";
              } else {
                  this.actualizarSismografoAFueraDeServicio();
-                 mensajeCierre += " Sismógrafo puesto fuera de servicio.";
+                 mensajeCierre += " El sismógrafo fué puesto fuera de servicio.";
              }
+
+             orderRepository.guardar(this.selecOrdenInspeccion);
+             
              this.pantallaCierreOrdenInspeccion.mostrarMensaje(mensajeCierre);
 
              this.finCU();
@@ -231,7 +253,7 @@ package com.mycompany.ppai.controllers;
      public void cerrarOrdenDeInspeccion() {
          this.getFechaHoraActual();
 
-         List<Estado> todosLosEstados = EstadoRepository.obtenerTodos();
+         List<Estado> todosLosEstados = estadoRepository.obtenerTodos();
          Estado estadoCerrada = null;
          for (Estado estado : todosLosEstados) {
              if (estado.esAmbitoOrdenDeInspeccion() && estado.esCerrada()) {
@@ -243,28 +265,33 @@ package com.mycompany.ppai.controllers;
      }
  
      public void actualizarSismografoAFueraDeServicio() {
-         List<Estado> todosLosEstados = EstadoRepository.obtenerTodos();
+         List<Estado> todosLosEstados = estadoRepository.obtenerTodos();
          Estado estadoFueraServicio = null;
          String nombreEstadoFueraServicio = "";
  
          for (Estado estado : todosLosEstados) {
              if (estado.esAmbitoSismografo() && estado.esFueraDeServicio()) {
                  estadoFueraServicio = estado;
-                 nombreEstadoFueraServicio = estado.getNombreEstado();
+                 nombreEstadoFueraServicio = estado.getNombreEstado().toString();
                  break;
              }
          }
-         List<Sismografo> todosLosSismografos = SismografoRepository.obtenerTodos();
+         List<Sismografo> todosLosSismografos = sismografoRepository.obtenerTodos();
          this.selecOrdenInspeccion.actualizarSismografoFueraServicio(this.fechaHoraActual, this.empleadoLogeado,
                  estadoFueraServicio, this.motivosFueraServicio, todosLosSismografos);
  
-         String cuerpoNotificacion = "Se ha cerrado la orden de inspección número "
-                 + this.selecOrdenInspeccion.getNumeroOrden()
-                 + " con el sismógrafo (Identificador: "
-                 + this.selecOrdenInspeccion.mostrarDatosOrdeneDeInspeccion(todosLosSismografos).get("identificadorSismografo").getAsString()
-                 + ") en estado " + nombreEstadoFueraServicio
-                 + " desde " + this.fechaHoraActual
-                 + ". Motivos: " + this.obtenerDescripcionMotivos();
+        String plantilla = 
+            "Se ha cerrado la orden de inspección número %d.\n" +
+            "Sismógrafo %s actualizado al estado: **%s**.\n" +
+            "Fecha y Hora de Cierre: %s.\n" +
+            "Motivos del Cierre:\n%s";
+         String cuerpoNotificacion = String.format(plantilla, 
+                this.selecOrdenInspeccion.getNumeroOrden(),
+                this.selecOrdenInspeccion.mostrarDatosOrdeneDeInspeccion(todosLosSismografos).get("identificadorSismografo").getAsString(),
+                nombreEstadoFueraServicio,
+                this.fechaHoraActual,
+                this.obtenerDescripcionMotivos()
+                );
  
          this.pantallaCierreOrdenInspeccion.mostrarMensaje("Notificación enviada:\n" + cuerpoNotificacion);
  
@@ -273,7 +300,7 @@ package com.mycompany.ppai.controllers;
      }
  
      public void actualizarSismografoAOnline() {
-         List<Estado> todosLosEstados = EstadoRepository.obtenerTodos();
+         List<Estado> todosLosEstados = estadoRepository.obtenerTodos();
          Estado estadoOnline = null;
  
          for (Estado estado : todosLosEstados) {
@@ -282,12 +309,13 @@ package com.mycompany.ppai.controllers;
                  break;
              }
          }
-         List<Sismografo> todosLosSismografos = SismografoRepository.obtenerTodos();
+         List<Sismografo> todosLosSismografos = sismografoRepository.obtenerTodos();
          this.selecOrdenInspeccion.actualizarSismografoOnline(this.fechaHoraActual, this.empleadoLogeado, estadoOnline, todosLosSismografos);
          // No se notifica ni por pantalla ni por mail
      }
  
      private String obtenerDescripcionMotivos() {
+
          StringBuilder descripcionMotivos = new StringBuilder();
          for (Object[] motivo : this.motivosFueraServicio) {
              MotivoTipo motivoTipo = (MotivoTipo) motivo[0];
@@ -298,12 +326,12 @@ package com.mycompany.ppai.controllers;
      }
  
      public void notificarResponsablesDeReparacion(String cuerpoNotificacion) {
-         List<Empleado> todosLosEmpleados = EmpleadoRepository.obtenerTodos();
+         List<Empleado> todosLosEmpleados = empleadoRepository.obtenerTodos();
          List<String> mailsResponsables = new ArrayList<>();
  
          for (Empleado empleado : todosLosEmpleados) {
              if (empleado.esResponsableDeReparacion()) {
-                 mailsResponsables.add(empleado.obtenerMail());
+                 mailsResponsables.add(empleado.getMail());
              }
          }
          interfazNotificacion.enviarNotificacion(mailsResponsables, cuerpoNotificacion);

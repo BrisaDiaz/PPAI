@@ -1,31 +1,66 @@
 package com.mycompany.ppai.repositories;
 
-import java.util.ArrayList;
+import com.mycompany.ppai.entities.OrdenDeInspeccion;
+import jakarta.persistence.EntityManager;
 import java.util.List;
 
-import com.mycompany.ppai.entities.OrdenDeInspeccion;
-
 public class OrdenDeInspeccionRepository {
-    private static final List<OrdenDeInspeccion> ordenesDeInspeccion = new ArrayList<>();
+    private static OrdenDeInspeccionRepository instance = null;
+    private final EntityManager entityManager;
         
-    public static List<OrdenDeInspeccion> obtenerTodos() {
-        return ordenesDeInspeccion;
+    private OrdenDeInspeccionRepository(EntityManager em) {
+        this.entityManager = em;
     }
 
-    public static void guardar(OrdenDeInspeccion ordenDeInspeccion) {
-        ordenesDeInspeccion.add(ordenDeInspeccion);
-    }
-    
-    public static void guardarTodos(List<OrdenDeInspeccion> listaOrdenDeInspeccions) {
-        ordenesDeInspeccion.addAll(listaOrdenDeInspeccions);
-    }
-
-    public static OrdenDeInspeccion obtenerPorNumero(Integer numeroOrden) {
-        for (OrdenDeInspeccion orden : ordenesDeInspeccion) {
-            if (orden.getNumeroOrden().equals(numeroOrden)) {
-                return orden;
-            }
+    public static OrdenDeInspeccionRepository getInstance(EntityManager em) {
+        if (instance == null) {
+            instance = new OrdenDeInspeccionRepository(em);
         }
-        return null;
+        return instance;
+    }
+
+    public List<OrdenDeInspeccion> obtenerTodos() {
+        return entityManager.createQuery("SELECT o FROM OrdenDeInspeccion o", OrdenDeInspeccion.class)
+                .getResultList();
+    }
+
+     public OrdenDeInspeccion guardar(OrdenDeInspeccion ordenDeInspeccion) {
+        try {
+            entityManager.getTransaction().begin();
+            OrdenDeInspeccion mergedOrden = entityManager.merge(ordenDeInspeccion);
+            entityManager.getTransaction().commit();
+            return mergedOrden;
+        } catch (Exception e) {
+            if (entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw new RuntimeException("Error al guardar la OrdenDeInspeccion", e);
+        }
+    }
+
+    public void guardarTodos(List<OrdenDeInspeccion> listaOrdenDeInspeccions) {
+        try {
+            entityManager.getTransaction().begin();
+            for (OrdenDeInspeccion orden : listaOrdenDeInspeccions) {
+                entityManager.merge(orden);
+            }
+            entityManager.getTransaction().commit();
+        } catch (Exception e) {
+            if (entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            throw new RuntimeException("Error al guardar la lista de OrdenesDeInspeccion", e);
+        }
+    }
+
+    public OrdenDeInspeccion obtenerPorNumero(Integer numeroOrden) {
+        try {
+            return entityManager.createQuery(
+                    "SELECT o FROM OrdenDeInspeccion o WHERE o.numeroOrden = :numero", OrdenDeInspeccion.class)
+                    .setParameter("numero", numeroOrden)
+                    .getSingleResult();
+        } catch (jakarta.persistence.NoResultException e) {
+            return null;
+        }
     }
 }

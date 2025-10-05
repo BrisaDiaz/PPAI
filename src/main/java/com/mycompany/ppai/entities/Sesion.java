@@ -2,44 +2,40 @@
 package com.mycompany.ppai.entities;
 
 import java.time.LocalDateTime;
-import java.util.Objects; 
+import java.util.Objects;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
 public class Sesion {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable=false)
     private LocalDateTime fechaHoraDesde;
-    private LocalDateTime fechaHoraHasta;
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable=false)
     private Usuario usuario;
 
-    public Sesion(LocalDateTime fechaHoraDesde, Usuario usuario) {
-        // Usar requireNonNull para asegurar que los parámetros no sean nulos
-        this.fechaHoraDesde = Objects.requireNonNull(fechaHoraDesde, "La fecha y hora de inicio no pueden ser nulas");
-        this.usuario = Objects.requireNonNull(usuario, "El usuario no puede ser nulo");
-    }
-
-    // Métodos getters
-    public LocalDateTime getFechaHoraDesde() {
-        return fechaHoraDesde;
-    }
-
-    public LocalDateTime getFechaHoraHasta() {
-        return fechaHoraHasta;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    // Métodos setters
-    public void setFechaHoraDesde(LocalDateTime fechaHoraDesde) {
-        this.fechaHoraDesde = Objects.requireNonNull(fechaHoraDesde, "La fecha y hora de inicio no pueden ser nulas");
-    }
-
-    public void setFechaHoraHasta(LocalDateTime fechaHoraHasta) {
-        this.fechaHoraHasta = fechaHoraHasta; // No se valida si es nulo, se asume que puede serlo
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = Objects.requireNonNull(usuario, "El usuario no puede ser nulo");
-    }
+    private LocalDateTime fechaHoraHasta;
 
     // Métodos de comportamiento
     public Empleado obtenerRILogeado() {

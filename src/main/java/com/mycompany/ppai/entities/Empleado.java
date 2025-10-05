@@ -1,65 +1,44 @@
 package com.mycompany.ppai.entities;
 
-import java.util.Objects;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Setter
+@Getter
 public class Empleado {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable=false)
     private String nombre;
+
+    @Column(nullable=false)
     private String apellido;
+
+    @Column(nullable=false)
     private String telefono;
+
+    @Column(nullable=false)
     private String mail;
+
+    @ManyToOne
+    @JoinColumn(name = "rol_id", nullable=false)
     private Rol rol;
-
-    public Empleado(String nombre, String apellido, String telefono, String mail, Rol rol) {
-        this.nombre = Objects.requireNonNull(nombre, "Nombre no puede ser nulo");
-        this.apellido = Objects.requireNonNull(apellido, "Apellido no puede ser nulo");
-        this.telefono = Objects.requireNonNull(telefono, "Teléfono no puede ser nulo");
-        this.mail = Objects.requireNonNull(mail, "mail no puede ser nulo");
-        this.rol = Objects.requireNonNull(rol, "Rol no puede ser nulo");
-    }
-
-    // Getters
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public String getApellido() {
-        return apellido;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public String obtenerMail() {
-        return mail;
-    }
-
-    public Rol getRol() {
-        return rol;
-    }
-
-    // Setters
-
-    public void setNombre(String nombre) {
-        this.nombre = Objects.requireNonNull(nombre, "Nombre no puede ser nulo");
-    }
-
-    public void setApellido(String apellido) {
-        this.apellido = Objects.requireNonNull(apellido, "Apellido no puede ser nulo");
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = Objects.requireNonNull(telefono, "Teléfono no puede ser nulo");
-    }
-
-    public void setMail(String mail) {
-        this.mail = Objects.requireNonNull(mail, "mail no puede ser nulo");
-    }
-
-    public void setRol(Rol rol) {
-        this.rol = Objects.requireNonNull(rol, "Rol no puede ser nulo");
-    }
 
     // Métodos de comportamiento
 

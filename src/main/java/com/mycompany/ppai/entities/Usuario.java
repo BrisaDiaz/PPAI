@@ -1,51 +1,42 @@
 package com.mycompany.ppai.entities;
 
-import java.util.Objects; // Importar Objects para usar requireNonNull
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
 public class Usuario {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable=false)
     private String nombreUsuario;
+
+    @Column(nullable=false)
     private String constraseña;
+
+    @OneToOne
+    @JoinColumn(name = "empleado_id", nullable=false)
     private Empleado empleado;
-
-    // Constructor
-    public Usuario(String nombreUsuario, String constraseña, Empleado empleado) {
-        // Usar requireNonNull para asegurar que los parámetros no sean nulos
-        this.nombreUsuario = Objects.requireNonNull(nombreUsuario, "El nombre de usuario no puede ser nulo");
-        this.constraseña = Objects.requireNonNull(constraseña, "La contraseña no puede ser nula");
-        this.empleado = Objects.requireNonNull(empleado, "El empleado no puede ser nulo");
-    }
-
-    // Métodos getters
-
-    public String getNombreUsuario() {
-        return nombreUsuario;
-    }
-
-    public String getConstraseña() {
-        return constraseña;
-    }
-
-    public Empleado getEmpleado() {
-        return empleado;
-    }
-
-    // Métodos setters
-
-    public void setNombreUsuario(String nombreUsuario) {
-        this.nombreUsuario = Objects.requireNonNull(nombreUsuario, "El nombre de usuario no puede ser nulo");
-    }
-
-    public void setConstraseña(String constraseña) {
-        this.constraseña = Objects.requireNonNull(constraseña, "La contraseña no puede ser nula");
-    }
-
-    public void setEmpleado(Empleado empleado) {
-        this.empleado = Objects.requireNonNull(empleado, "El empleado no puede ser nulo");
-    }
 
     // Métodos de comportamiento
 
     public Empleado getRILogeado() {
-        return empleado;
+        return this.getEmpleado();
     }
 }

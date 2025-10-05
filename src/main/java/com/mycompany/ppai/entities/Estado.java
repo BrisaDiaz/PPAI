@@ -1,59 +1,56 @@
 package com.mycompany.ppai.entities;
 
-import java.util.Objects; 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
+@Setter
 public class Estado {
-    private String ambito;
-    private String nombreEstado;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    // Constructor
-    public Estado(String nombreEstado, String ambito) {
-        // Usar requireNonNull para asegurar que los parámetros no sean nulos
-        this.ambito = Objects.requireNonNull(ambito, "El ámbito no puede ser nulo");
-        this.nombreEstado = Objects.requireNonNull(nombreEstado, "El nombre del estado no puede ser nulo");
-    }
+    @Column(nullable=false)
+    private AmbitoEstadoEnum ambito;
 
-    // Métodos Getters
-
-    public String getAmbito() {
-        return ambito;
-    }
-
-    public String getNombreEstado() {
-        return nombreEstado;
-    }
-
-    // Métodos Setters
-
-    public void setAmbito(String ambito) {
-        this.ambito = Objects.requireNonNull(ambito, "El ámbito no puede ser nulo");
-    }
-
-    public void setNombreEstado(String nombreEstado) {
-        this.nombreEstado = Objects.requireNonNull(nombreEstado, "El nombre del estado no puede ser nulo");
-    }
+    @Column(nullable=false)
+    private NombreEstadoEnum nombreEstado;
 
     // Métodos de comportamiento
 
     public boolean esAmbitoOrdenDeInspeccion() {
-        return ambito.equals("Orden de Inspección");
+        return ambito.equals(AmbitoEstadoEnum.ORDEN_DE_INSPECCION);
     }
 
     public boolean esAmbitoSismografo() {
-        return ambito.equals("Sismógrafo");
+        return ambito.equals(AmbitoEstadoEnum.SISMOGRAFO);
     }
 
     public boolean esCompletamenteRealizada() {
-        return nombreEstado.equals("Completamente Realizada");
+        return nombreEstado.equals(NombreEstadoEnum.COMPLETAMENTE_REALIZADA);
     }
 
     public boolean esCerrada() {
-        return nombreEstado.equals("Cerrada");
+        return nombreEstado.equals(NombreEstadoEnum.CERRADA);
     }
+
     public boolean esFueraDeServicio() {
-        return nombreEstado.equals("Fuera de Servicio");
+        return nombreEstado.equals(NombreEstadoEnum.FUERA_DE_SERVICIO);
     }
+
     public boolean esOnline() {
-        return nombreEstado.equals("Online");
+        return nombreEstado.equals(NombreEstadoEnum.ONLINE);
     }
 }

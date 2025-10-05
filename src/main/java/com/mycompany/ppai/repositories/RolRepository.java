@@ -1,47 +1,50 @@
 package com.mycompany.ppai.repositories;
 
-import com.mycompany.ppai.entities.Estado;
-import jakarta.persistence.EntityManager;
 import java.util.List;
 
-public class EstadoRepository {
-    private static EstadoRepository instance = null;
+import com.mycompany.ppai.entities.Rol;
+
+import jakarta.persistence.EntityManager;
+
+public class RolRepository {
+    private static RolRepository instance = null;
+
     private final EntityManager entityManager;
-        
-    private EstadoRepository(EntityManager em) {
+
+    private RolRepository(EntityManager em) {
         this.entityManager = em;
     }
 
-    public static EstadoRepository getInstance(EntityManager em) {
+    public static RolRepository getInstance(EntityManager em) {
         if (instance == null) {
-            instance = new EstadoRepository(em);
+            instance = new RolRepository(em);
         }
         return instance;
     }
 
-    public List<Estado> obtenerTodos() {
-        return entityManager.createQuery("SELECT e FROM Estado e", Estado.class)
+    public List<Rol> obtenerTodos() {
+        return entityManager.createQuery("SELECT r FROM Rol r", Rol.class)
                 .getResultList();
     }
 
-    public Estado guardar(Estado estado) {
+    public Rol guardar(Rol rol) {
         try {
             entityManager.getTransaction().begin();
-            Estado mergedOrden = entityManager.merge(estado);
+            Rol mergedOrden = entityManager.merge(rol);
             entityManager.getTransaction().commit();
             return mergedOrden;
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().rollback();
             }
-            throw new RuntimeException("Error el guardar el Estado", e);
+            throw new RuntimeException("Error el guardar el Rol", e);
         }
     }
 
-    public void guardarTodos(List<Estado> listaEstados) {
+    public void guardarTodos(List<Rol> listaRols) {
         try {
             entityManager.getTransaction().begin();
-            for (Estado orden : listaEstados) {
+            for (Rol orden : listaRols) {
                 entityManager.merge(orden);
             }
             entityManager.getTransaction().commit();
@@ -49,7 +52,7 @@ public class EstadoRepository {
             if (entityManager.getTransaction().isActive()) {
                 entityManager.getTransaction().rollback();
             }
-            throw new RuntimeException("Error al guardar la lista de Estado", e);
+            throw new RuntimeException("Error al guardar la lista de Rol", e);
         }
     }
 }
