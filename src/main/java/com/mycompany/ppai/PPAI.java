@@ -11,6 +11,7 @@ import jakarta.persistence.Persistence;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 public class PPAI {
 
     public static void main(String[] args) {
@@ -151,8 +152,26 @@ public class PPAI {
             .descripcion("Problema de sensor")
             .build();
 
-            motivoTipoRepository.guardarTodos(List.of(motivoTipo1, motivoTipo2));
-            
+            MotivoTipo motivoTipo3 = MotivoTipo.builder()
+            .descripcion("Mantenimiento programado")
+            .build();
+
+            MotivoTipo motivoTipo4 = MotivoTipo.builder()
+            .descripcion("Daño por condiciones climáticas")
+            .build();
+
+            MotivoTipo motivoTipo5 = MotivoTipo.builder()
+            .descripcion("Desconexión accidental de red")
+            .build();
+
+            motivoTipoRepository.guardarTodos(List.of(
+                motivoTipo1,
+                motivoTipo2,
+                motivoTipo3,
+                motivoTipo4,
+                motivoTipo5
+            ));
+
             System.out.println("--- DATOS DE INICIALIZACIÓN GUARDADOS EXITOSAMENTE ---");
 
 

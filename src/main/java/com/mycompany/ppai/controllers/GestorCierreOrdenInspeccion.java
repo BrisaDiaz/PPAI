@@ -171,21 +171,13 @@ import jakarta.persistence.EntityManager;
                 // Validar la observación de cierre de orden (A3)
              validarObservacionCierre();
              if (!this.validacionObservacionOk) {
-                 this.pantallaCierreOrdenInspeccion.mostrarMensaje("Debe ingresar una observación para cerrar la orden.");
                  this.pantallaCierreOrdenInspeccion.solicitarObservacionCierreOrden();
                  return false;
              }
              if (this.ponerSismografoFueraServicio) {
                  validarSelecMotivoFueraDeServicio();
                  boolean validacionesMotivoOk = this.validacionSelecMotivoOk && this.validacionComentariosMotivosOk;
-                  
-                 if (!this.validacionSelecMotivoOk) {
-                     this.pantallaCierreOrdenInspeccion.mostrarMensaje("Debe seleccionar al menos un motivo si pone el sismógrafo fuera de servicio.");
-                 }
 
-                 if (!this.validacionComentariosMotivosOk) {
-                     this.pantallaCierreOrdenInspeccion.mostrarMensaje("Los comentarios de los motivos no pueden estar vacíos.");
-                 }
                  if (!validacionesMotivoOk) {
                     List<String> tiposMotivoFueraDeServicio = mostrarTiposMotivoFueraDeServicio();
                     this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicio);

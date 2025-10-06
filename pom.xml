@@ -1,104 +1,150 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.mycompany</groupId>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.mycompany</groupId>
     <artifactId>PPAI</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>PPAI Red Sismica</name>
-  <url>http://maven.apache.org</url>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>PPAI Red Sismica</name>
+    <url>http://maven.apache.org</url>
+
     <properties>
-      <maven.compiler.source>21</maven.compiler.source>
-      <maven.compiler.target>21</maven.compiler.target>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <junit.version>3.8.1</junit.version>
-      <lombok.version>1.18.30</lombok.version>
-      <hibernate.version>6.2.13.Final</hibernate.version>
-      <h2.version>2.2.224</h2.version>
-      <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
-      <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
-      <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
-  </properties>
+        <!-- Java Version -->
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        
+        <!-- Dependency Versions -->
+        <junit.version>3.8.1</junit.version>
+        <lombok.version>1.18.30</lombok.version>
+        <hibernate.version>6.2.13.Final</hibernate.version>
+        <h2.version>2.2.224</h2.version>
+        <gson.version>2.10.1</gson.version>
 
-  <dependencies>
+        <!-- UI Libraries -->
+        <flatlaf.version>3.6.1</flatlaf.version>
+        <miglayout.version>5.3</miglayout.version>
+        
+        <!-- Plugin Versions -->
+        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
+        <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
+    </properties>
 
-    <!-- JUnit para testing -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
+    <dependencies>
 
-    <!-- Lombok -->
-    <dependency>
-          <groupId>org.projectlombok</groupId>
-          <artifactId>lombok</artifactId>
-          <version>${lombok.version}</version>
-          <scope>provided</scope>
-      </dependency>
+        <!-- UI: MigLayout (ESENCIAL para el diseño de la PantallaCierreOrdenInspeccion) -->
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>${miglayout.version}</version>
+        </dependency>
+        
+        <!-- UI: FlatLaf Base (Se mantiene la base, se descarta el tema Darcula) -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>${flatlaf.version}</version>
+        </dependency>
 
-       <!-- JPA API -->
-      <dependency>
-          <groupId>jakarta.persistence</groupId>
-          <artifactId>jakarta.persistence-api</artifactId>
-          <version>3.1.0</version>
-      </dependency>
-
-      <!-- Hibernate Core -->
-      <dependency>
-          <groupId>org.hibernate.orm</groupId>
-          <artifactId>hibernate-core</artifactId>
-          <version>${hibernate.version}</version>
-      </dependency>
-
-      <!-- H2 Database -->
-      <dependency>
-          <groupId>com.h2database</groupId>
-          <artifactId>h2</artifactId>
-          <version>${h2.version}</version>
-      </dependency>
-
-      <!--GSON-->
-      <dependency>
-        <groupId>com.google.code.gson</groupId>
-        <artifactId>gson</artifactId>
-        <version>2.10.1</version>
-      </dependency>
-
-  </dependencies>
-  <build>
-      <pluginManagement>
-        <plugins>
-          <!-- Maven Compiler Plugin -->
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>${maven.compiler.plugin.version}</version>
-              <configuration>
-                  <source>21</source>
-                  <target>21</target>
-              </configuration>
-          </plugin>
-
-          <!-- Maven Surefire Plugin para testing -->
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <version>${maven.surefire.plugin.version}</version>
-          </plugin>
-
-          <!-- Maven Exec Plugin para ejecutar la aplicación -->
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
+        <!-- Utilidades -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- Persistencia (JPA/Hibernate/H2) -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
             <version>3.1.0</version>
-            <configuration>
-              <mainClass>com.mycompany.ppai.PPAI</mainClass>
-            </configuration>
-          </plugin>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+        
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+    
+    <build>
+        <!-- Importante: Los plugins deben estar en <plugins> y no solo en <pluginManagement> para ejecutarse -->
+        <plugins>
+            <!-- 1. Maven Compiler Plugin (Asegura la compilación con Java 21) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            
+            <!-- 2. Maven Surefire Plugin (Para testing) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+            </plugin>
+            
+            <!-- 3. Maven Exec Plugin (Para ejecutar la aplicación fácilmente durante el desarrollo) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.plugin.version}</version>
+                <configuration>
+                    <mainClass>com.mycompany.ppai.PPAI</mainClass>
+                </configuration>
+            </plugin>
+            
+            <!-- 4. Maven Shade Plugin (SOLUCIÓN para el NoClassDefFoundError) -->
+            <!-- Empaqueta todas las dependencias (como MigLayout) dentro del JAR final, 
+                 creando un JAR ejecutable (Fat JAR) que no requiere librerías externas. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.mycompany.ppai.PPAI</mainClass>
+                                </transformer>
+                            </transformers>
+                            <!-- El JAR ejecutable se llamará PPAI-standalone.jar -->
+                            <finalName>${project.artifactId}-standalone</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-      </pluginManagement>
     </build>
 
 </project>
