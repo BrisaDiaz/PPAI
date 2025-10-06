@@ -1,18 +1,38 @@
 package com.mycompany.ppai.boundaries;
 
-import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
-import com.google.gson.JsonObject;
-import net.miginfocom.swing.MigLayout;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.border.Border;
-import java.awt.*;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
+
+import com.google.gson.JsonObject;
+import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
+
+import net.miginfocom.swing.MigLayout;
 
 public class PantallaCierreOrdenInspeccion extends JFrame {
     // Constantes de texto (Se mantienen sin cambios)
@@ -24,7 +44,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     private static final String LABEL_OBSERVACION = "Ingrese la observación de cierre:";
     private static final String CHECKBOX_FUERA_SERVICIO = "¿Se desea registrar el sismógrafo como fuera de servicio?";
     private static final String BOTON_CONFIRMAR_OBSERVACION = "Confirmar Observación";
-    private static final String LABEL_MOTIVOS = "Seleccione los motivos (y comentarios):";
+    private static final String LABEL_MOTIVOS = "Seleccione los motivos e ingrese un comentario:";
     private static final String LABEL_COMENTARIO = "Comentario:";
     private static final String BOTON_CONFIRMAR_MOTIVOS = "Confirmar Motivos";
     private static final String LABEL_CONFIRMACION = "¿Desea confirmar el cierre de la orden?";
@@ -32,16 +52,22 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     private static final String BOTON_CANCELAR = "Cancelar";
     private static final String LABEL_CIERRE_EXITOSO = "Orden de inspección cerrada exitosamente.";
     private static final String BOTON_VOLVER_INICIO = "Volver al Inicio";
+    private static final String BOTON_REGRESAR = "← Regresar"; 
     private static final String COLUMNA_SELECCIONAR = "Seleccionar";
-    private static final String COLUMNA_NUMERO = "Número";
+    private static final String COLUMNA_NUMERO = "Nro. de orden";
+    private static final String COLUMNA_ESTACION = "Estación";
     private static final String COLUMNA_SISMOGRAFO = "Sismógrafo";
-    private static final String COLUMNA_FECHA_FIN = "Fecha Fin";
+    private static final String COLUMNA_FECHA_FIN = "Fecha de finalización";
     private static final String MENSAJE_SELECCIONAR_ORDEN = "Por favor, seleccione una orden.";
     private static final String TITULO_ADVERTENCIA = "Advertencia";
     private static final String MENSAJE_ERROR_OBSERVACION = "Por favor, corrija la observación. (La observación no debe estar vacía y debe ser coherente)";
     private static final String MENSAJE_ERROR_COMENTARIOS = "Por favor, complete los comentarios de los motivos seleccionados.";
     private static final String MENSAJE_ERROR_SELECCION_MOTIVO = "Debe seleccionar al menos un motivo si marca el sismógrafo como 'fuera de servicio'.";
     private static final String MENSAJE_ERROR_CONFIRMACION = "Error al confirmar el cierre. Por favor, revise la información.";
+    
+    // Constantes de Estilo
+    private static final Color COLOR_CONFIRMAR = new Color(0x0276aa); // Color Azul/Cyan
+    private static final Color COLOR_TEXTO_CONFIRMAR = Color.WHITE;
 
     private final GestorCierreOrdenInspeccion gestor;
     private final JPanel mainPanel;
@@ -105,19 +131,36 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         setVisible(true);
     }
 
-    // --- PANELES CON MEJORAS DE UI ---
+    // --- MÉTODOS DE UTILIDAD DEL UI Y ESTILOS ---
 
+    /**
+     * Crea un botón de "Regresar" y le asigna el listener para cambiar a la tarjeta deseada.
+     * @param targetCard Nombre de la tarjeta a la que se debe regresar si no hay lógica especial.
+     * @return JButton configurado.
+     */
+    private JButton crearBotonRegresar(String targetCard) {
+        JButton btn = new JButton(BOTON_REGRESAR);
+        
+        // Listener que usa lógica especializada si viene de "confirmacion"
+        btn.addActionListener(e -> {
+            if ("confirmacion".equals(targetCard)) {
+                regresarDesdeConfirmacion();
+            } else {
+                regresarClick(targetCard);
+            }
+        });
+        return btn;
+    }
+    
     private JPanel crearPanelCarga() {
-        // Usa MigLayout para centrado vertical y horizontal con insets de 50
         JPanel loadingPanel = new JPanel(new MigLayout("insets 50, align center, fill"));
         JLabel loadingLabel = new JLabel(LABEL_CARGANDO, SwingConstants.CENTER);
-        loadingLabel.setFont(loadingLabel.getFont().deriveFont(Font.BOLD, 18f));
+        loadingLabel.setFont(loadingLabel.getFont().deriveFont(Font.BOLD, 16f));
         loadingPanel.add(loadingLabel, "span, wrap, align center");
         return loadingPanel;
     }
 
     private JPanel crearPanelSinOrdenes() {
-        // Usa MigLayout para centrado vertical y horizontal con insets de 50
         JPanel sinOrdenesPanel = new JPanel(new MigLayout("insets 50, align center, fill"));
         JLabel sinOrdenesLabel = new JLabel(LABEL_SIN_ORDENES, SwingConstants.CENTER);
         sinOrdenesLabel.setFont(sinOrdenesLabel.getFont().deriveFont(Font.BOLD, 16f));
@@ -126,17 +169,21 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     }
 
     private JPanel crearPanelOrdenes() {
-        // Aumento de insets y uso de gaps para separar elementos del borde y entre sí.
-        ordenesPanel = new JPanel(new MigLayout("fill, insets 25 30 25 30", "[grow, fill]", "[pref!][grow, fill][pref!]"));
+        // Layout: [pref! (header)][grow, fill (table)][pref! (buttons)]
+        ordenesPanel = new JPanel(
+                new MigLayout("fill, insets 25 30 25 30", "[grow, fill]", "[pref!][grow, fill][pref!]"));
 
-        JLabel headerLabel = new JLabel(LABEL_SELECCIONAR_ORDEN, SwingConstants.CENTER);
+        JLabel headerLabel = new JLabel(LABEL_SELECCIONAR_ORDEN, SwingConstants.LEFT);
         headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 16f));
 
-        ordenesTableModel = new DefaultTableModel(new Object[]{COLUMNA_SELECCIONAR, COLUMNA_NUMERO, COLUMNA_SISMOGRAFO, COLUMNA_FECHA_FIN}, 0) {
+
+        ordenesTableModel = new DefaultTableModel(
+                new Object[] { COLUMNA_SELECCIONAR, COLUMNA_NUMERO, COLUMNA_ESTACION, COLUMNA_SISMOGRAFO, COLUMNA_FECHA_FIN }, 0) {
             @Override
             public Class<?> getColumnClass(int column) {
                 return column == 0 ? Boolean.class : super.getColumnClass(column);
             }
+
             @Override
             public boolean isCellEditable(int row, int column) {
                 return column == 0;
@@ -146,7 +193,8 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         ordenesTable = new JTable(ordenesTableModel);
         ordenesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Listener para simular checkbox exclusivo y guardar selección
+        centrarValoresTabla(ordenesTable);
+
         ordenesTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = ordenesTable.getSelectedRow();
@@ -158,26 +206,39 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         seleccionarOrdenBtn = new JButton(BOTON_SELECCIONAR_ORDEN);
         seleccionarOrdenBtn.addActionListener(this::tomarSelecOrdenInspeccion);
 
-        // Añadir componentes al panel con MigLayout
-        ordenesPanel.add(headerLabel, "north, wrap, gapy 0 15"); // Más espacio después del título
-        ordenesPanel.add(ordenesScrollPane, "grow, push, wrap, gapy 0 15"); // Espacio antes del botón
-        ordenesPanel.add(seleccionarOrdenBtn, "south, align center"); // Asegurar centrado del botón
+        JPanel buttonPanel = new JPanel(new MigLayout("align center"));
+        buttonPanel.add(seleccionarOrdenBtn, "align center");
+
+        ordenesPanel.add(headerLabel, "wrap, gapy 5 5"); 
+        ordenesPanel.add(ordenesScrollPane, "grow, push, wrap"); 
+        ordenesPanel.add(buttonPanel, "align center, wrap , gapy 10 15"); 
 
         return ordenesPanel;
     }
+    
+    private void centrarValoresTabla(JTable table) {
+        javax.swing.table.DefaultTableCellRenderer centerRenderer = new javax.swing.table.DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+        table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+        table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+        table.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+    }
 
     private JPanel crearPanelObservacion() {
-        // Aumento de insets y uso de padding interno en el área de texto.
-        observacionPanel = new JPanel(new MigLayout("fill, insets 25", "[grow, fill]", "[pref!][grow, fill][pref!][pref!]"));
+        // Layout: [pref! (regresar)][pref! (header)][grow, fill (text area)][pref! (checkbox)][pref! (buttons)]
+        observacionPanel = new JPanel(new MigLayout("fill, insets 25", "[grow, fill]", "[pref!][pref!][grow, fill][pref!][pref!]"));
+
+        // **CORRECCIÓN AQUÍ:** Usamos "pref!" para que el botón tome el ancho de su contenido.
+        observacionPanel.add(crearBotonRegresar("ordenes"), "align left, wrap, gapy 0 10, w pref!");
 
         JLabel headerLabel = new JLabel(LABEL_OBSERVACION, SwingConstants.LEFT);
-        headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 14f));
+        headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 16f));
 
         observacionTextArea = new JTextArea(5, 40);
         observacionTextArea.setLineWrap(true);
         observacionTextArea.setWrapStyleWord(true);
         
-        // ** Aplicar Borde y Padding Interno a JTextArea **
         Border innerPadding = BorderFactory.createEmptyBorder(8, 8, 8, 8);
         Border lineBorder = BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1);
         observacionTextArea.setBorder(BorderFactory.createCompoundBorder(lineBorder, innerPadding));
@@ -188,24 +249,29 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
 
         confirmarObservacionBtn = new JButton(BOTON_CONFIRMAR_OBSERVACION);
         confirmarObservacionBtn.addActionListener(this::tomarObservacionCierreOrden);
+        
+        JPanel buttonPanel = new JPanel(new MigLayout("align center"));
+        buttonPanel.add(confirmarObservacionBtn, "align center");
 
         observacionPanel.add(headerLabel, "wrap, gapy 5 5");
-        observacionPanel.add(observacionScrollPane, "grow, push, wrap, hmin 100, gapy 5 10"); // Espacio después del área
-        observacionPanel.add(fueraServicioCheckBox, "wrap, gapy 10 20"); // Más espacio vertical antes del botón
-        observacionPanel.add(confirmarObservacionBtn, "south, align center");
+        observacionPanel.add(observacionScrollPane, "grow, push, wrap, hmin 100, gapy 5 5"); 
+        observacionPanel.add(fueraServicioCheckBox, "wrap, gapy 0 10"); 
+        observacionPanel.add(buttonPanel, "align center, wrap, gapy 0 15");
 
         return observacionPanel;
     }
 
     private JPanel crearPanelMotivos() {
-        // Título, scrollable body y botón de confirmación.
-        motivosPanelContainer = new JPanel(new MigLayout("fill, insets 25", "[grow, fill]", "[pref!][grow, fill][pref!]"));
+        // Layout: [pref! (regresar)][pref! (header)][grow, fill (scroll)][pref! (buttons)]
+        motivosPanelContainer = new JPanel(new MigLayout("fill, insets 25", "[grow, fill]", "[pref!][pref!][grow, fill][pref!]"));
+
+        // **CORRECCIÓN AQUÍ:** Usamos "pref!" para que el botón tome el ancho de su contenido.
+        motivosPanelContainer.add(crearBotonRegresar("observacion"), "align left, wrap, gapy 0 10, w pref!");
 
         JLabel headerLabel = new JLabel(LABEL_MOTIVOS, SwingConstants.LEFT);
-        headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 14f));
+        headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 16f));
 
-        // Ajuste: se agrega 'gapy 10' para separar verticalmente cada fila de motivo y comentario.
-        motivosPanel = new JPanel(new MigLayout("wrap 3, fillx, insets 10 0 0 0, gapy 10", "[pref!][pref!][grow, fill]"));
+        motivosPanel = new JPanel(new MigLayout("wrap 3, fillx, insets 10 0 0 0, gapy 10", "[pref!]30[pref!][grow, fill]"));
 
         JScrollPane motivosScrollPane = new JScrollPane(motivosPanel);
         motivosScrollPane.setBorder(BorderFactory.createEmptyBorder()); 
@@ -213,56 +279,96 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
 
         confirmarMotivosBtn = new JButton(BOTON_CONFIRMAR_MOTIVOS);
         confirmarMotivosBtn.addActionListener(this::tomarComentarioPorMotivoTipo);
-
+        
+        JPanel buttonPanel = new JPanel(new MigLayout("align center"));
+        buttonPanel.add(confirmarMotivosBtn, "align center");
+        
         motivosPanelContainer.add(headerLabel, "wrap, gapy 5");
-        motivosPanelContainer.add(motivosScrollPane, "grow, push, wrap, gapy 10 20"); // Más espacio antes del botón
-        motivosPanelContainer.add(confirmarMotivosBtn, "south, align center");
+        motivosPanelContainer.add(motivosScrollPane, "grow, push, wrap, gapy 10 20"); 
+        motivosPanelContainer.add(buttonPanel, "align center, wrap, gapy 0 15");
 
         return motivosPanelContainer;
     }
 
-    private JPanel crearPanelConfirmacion() {
-        // **Aumento de Insets** para forzar el centrado visual y mejor espaciado vertical.
-        confirmacionPanel = new JPanel(new MigLayout("insets 100, align center, fill", "[grow, fill]"));
+   private JPanel crearPanelConfirmacion() {
+
+        confirmacionPanel = new JPanel(new MigLayout("fill, insets 25 50 25 50", "[grow, fill]", "[pref!][grow, fill][pref!]")); 
+
+        confirmacionPanel.add(crearBotonRegresar("confirmacion"), "align left, wrap, gapy 0 0, w pref!"); 
+
+        JPanel contentPanel = new JPanel(new MigLayout("align center", "[center]")); 
 
         JLabel confirmacionLabel = new JLabel(LABEL_CONFIRMACION, SwingConstants.CENTER);
-        confirmacionLabel.setFont(confirmacionLabel.getFont().deriveFont(Font.BOLD, 18f));
+        confirmacionLabel.setFont(confirmacionLabel.getFont().deriveFont(Font.BOLD, 16f));
 
-        // Panel para los botones, asegurando separación horizontal
         JPanel buttonPanel = new JPanel(new MigLayout("align center, gap 30"));
         confirmarCierreBtn = new JButton(BOTON_CONFIRMAR_CIERRE);
         cancelarCierreBtn = new JButton(BOTON_CANCELAR);
 
         confirmarCierreBtn.addActionListener(e -> tomarConfirmacionCierre(true));
         cancelarCierreBtn.addActionListener(e -> tomarConfirmacionCierre(false));
-
+        
         buttonPanel.add(confirmarCierreBtn);
         buttonPanel.add(cancelarCierreBtn);
+        
+        // Añadimos la etiqueta y el panel de botones al nuevo 'contentPanel'
+        contentPanel.add(confirmacionLabel, "wrap, align center, gapy 0 5"); // Pequeño gap entre la etiqueta y los botones
+        contentPanel.add(buttonPanel, "align center");
 
-        confirmacionPanel.add(confirmacionLabel, "wrap, align center, gapy 20 40"); // Más espacio vertical
-        confirmacionPanel.add(buttonPanel, "align center");
+        // Añadimos el 'contentPanel' al panel principal, permitiéndole crecer y centrarse
+        confirmacionPanel.add(contentPanel, "grow, push, wrap, align center");
 
         return confirmacionPanel;
     }
-
+    
     private JPanel crearPanelCierreExitoso() {
-        // Mejorado con MigLayout para centrado y mejor presentación.
-        cierreExitosoPanel = new JPanel(new MigLayout("insets 50, align center, fill", "[grow, fill]"));
+        cierreExitosoPanel = new JPanel(new MigLayout("insets 50, align center", "[center]"));
 
         JLabel cierreExitosoLabel = new JLabel(LABEL_CIERRE_EXITOSO, SwingConstants.CENTER);
-        cierreExitosoLabel.setFont(cierreExitosoLabel.getFont().deriveFont(Font.BOLD, 18f));
-        cierreExitosoLabel.setForeground(new Color(60, 179, 113)); // Color verde éxito
+        cierreExitosoLabel.setFont(cierreExitosoLabel.getFont().deriveFont(Font.BOLD, 16f));
 
         volverInicioBtn = new JButton(BOTON_VOLVER_INICIO);
         volverInicioBtn.addActionListener(e -> volverInicioClick());
 
-        cierreExitosoPanel.add(cierreExitosoLabel, "wrap, align center, gapy 20");
-        cierreExitosoPanel.add(volverInicioBtn, "align center");
+        cierreExitosoPanel.add(cierreExitosoLabel, "wrap, align center, gapy 0 10"); 
+        cierreExitosoPanel.add(volverInicioBtn, "");
 
         return cierreExitosoPanel;
     }
 
-    // --- MÉTODOS DE LÓGICA DE INTERFAZ (Ajuste de lógica de reintento en toma de observación) ---
+    // --- LÓGICA DE NAVEGACIÓN Y ESTADO ---
+    
+    private void regresarClick(String targetCard) {
+        cardLayout.show(mainPanel, targetCard);
+        
+        switch (targetCard) {
+            case "ordenes":
+                ordenesTable.setEnabled(true);
+                seleccionarOrdenBtn.setEnabled(true);
+                break;
+            case "observacion":
+                solicitarObservacionCierreOrden(); // Restaura datos
+                break;
+            case "motivos":
+                solicitarMotivosFueraDeServicio(motivosTipoFueraServicio); // Restaura datos
+                break;
+        }
+    }
+    
+    /**
+     * Lógica especial para el botón "Regresar" desde el panel de Confirmación.
+     */
+    private void regresarDesdeConfirmacion() {
+        // Usamos el estado guardado (fueraServicioPendienteReintento)
+        if (fueraServicioPendienteReintento) { 
+            // Vuelve a MOTIVOS.
+            regresarClick("motivos");
+        } else {
+            // Vuelve a OBSERVACIÓN.
+            regresarClick("observacion");
+        }
+    }
+
 
     public void opcionCerrarOrdenDeInspeccion() {
         cardLayout.show(mainPanel, "loading");
@@ -286,7 +392,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         fueraServicioCheckBox.setSelected(false);
         motivosPanel.removeAll();
         motivoCheckBoxes.clear();
-        // Es importante revalidar y repintar después de removeAll()
+        comentarioTextFields.clear(); 
         motivosPanel.revalidate();
         motivosPanel.repaint();
     }
@@ -311,11 +417,18 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     }
 
     private void actualizarSeleccionTabla(int selectedRow) {
-        if (lastSelectedRow != -1 && selectedRow != lastSelectedRow) {
-            ordenesTableModel.setValueAt(false, lastSelectedRow, 0);
+        if (ordenesTableModel.getRowCount() == 0) {
+            lastSelectedRow = -1;
+            return;
         }
+
+        if (lastSelectedRow != -1 && selectedRow != lastSelectedRow) {
+            if (lastSelectedRow < ordenesTableModel.getRowCount()) {
+                ordenesTableModel.setValueAt(false, lastSelectedRow, 0);
+            }
+        }
+
         if (selectedRow != -1) {
-            // Deseleccionar todas las filas primero, excepto la seleccionada, si es necesario.
             for (int i = 0; i < ordenesTableModel.getRowCount(); i++) {
                 if (i != selectedRow) {
                     ordenesTableModel.setValueAt(false, i, 0);
@@ -336,12 +449,31 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         if (infoOrdenesInspeccion.isEmpty()) {
             cardLayout.show(mainPanel, "sinOrdenes");
         } else {
+            DateTimeFormatter targetFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS",
+                    Locale.ROOT);
+
             for (JsonObject info : infoOrdenesInspeccion) {
                 int numeroOrden = info.get("numeroOrden").getAsInt();
                 String identificadorSismografo = info.get("identificadorSismografo").getAsString();
                 String fechaHoraFinalizacion = info.get("fechaHoraFinalizacion").getAsString();
+                String nombreEstacion = info.get("nombreEstacion").getAsString();
+
+                String fechaFormateada;
+                try {
+                    LocalDateTime dateTime = LocalDateTime.parse(fechaHoraFinalizacion, inputFormatter);
+
+                    fechaFormateada = dateTime.format(targetFormatter);
+
+                } catch (DateTimeParseException e) {
+                    System.err.println(
+                            "Error al parsear fecha: " + fechaHoraFinalizacion + ". Usando el valor original.");
+                    fechaFormateada = fechaHoraFinalizacion;
+                }
+
                 ordenMap.put(identificadorSismografo + " - " + numeroOrden, numeroOrden);
-                ordenesTableModel.addRow(new Object[]{false, numeroOrden, identificadorSismografo, fechaHoraFinalizacion});
+
+                ordenesTableModel.addRow(new Object[] { false, numeroOrden, nombreEstacion, identificadorSismografo, fechaFormateada });
             }
             cardLayout.show(mainPanel, "ordenes");
             ordenesTable.setEnabled(true);
@@ -369,7 +501,8 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         fueraServicioCheckBox.setEnabled(true);
         confirmarObservacionBtn.setEnabled(true);
 
-        if (esperandoReintento && observacionPendienteReintento != null) {
+        // Restaurar valores si existen (ya sea por reintento o por regreso)
+        if (observacionPendienteReintento != null) {
             observacionTextArea.setText(observacionPendienteReintento);
             fueraServicioCheckBox.setSelected(fueraServicioPendienteReintento);
         } else {
@@ -382,7 +515,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         String observacion = observacionTextArea.getText().trim();
         boolean fueraServicio = fueraServicioCheckBox.isSelected();
 
-        // Guardamos el estado actual de la observación por si hay que reintentar
+        // Guardamos el estado actual por si hay que reintentar o regresar
         observacionPendienteReintento = observacion;
         fueraServicioPendienteReintento = fueraServicio;
         
@@ -390,13 +523,10 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
     }
 
     public void observacionCierreOrdenOK() {
-        // Solo si el gestor valida, deshabilitamos la UI de observación
         observacionTextArea.setEnabled(false);
         fueraServicioCheckBox.setEnabled(false);
         confirmarObservacionBtn.setEnabled(false);
         esperandoReintento = false;
-        observacionPendienteReintento = null;
-        fueraServicioPendienteReintento = false;
     }
 
     public void solicitarMotivosFueraDeServicio(List<String> tiposMotivo) {
@@ -404,29 +534,25 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         motivosPanel.removeAll();
         motivoCheckBoxes.clear();
         comentarioTextFields.clear();
-        // Layout para motivos con gap vertical mejorado
-        motivosPanel.setLayout(new MigLayout("wrap 3, fillx, insets 10 0 0 0, gapy 10", "[pref!][pref!][grow, fill]"));
+        
+        motivosPanel.setLayout(new MigLayout("wrap 3, fillx, insets 10 0 0 0, gapy 15", "[pref!]30[pref!][grow, fill]"));
 
-        List<String[]> motivosReintento = (esperandoReintento && motivosPendientesReintento != null) ? motivosPendientesReintento : new ArrayList<>();
+        // Restaurar motivos si existen (ya sea por reintento o por regreso)
+        List<String[]> motivosReintento = motivosPendientesReintento != null ? motivosPendientesReintento : new ArrayList<>();
 
         Border fieldPadding = BorderFactory.createEmptyBorder(4, 5, 4, 5);
         Border fieldLineBorder = BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1);
         
         for (String tipo : tiposMotivo) {
 
-            // Fila de componentes: CheckBox | Label "Comentario" | TextField
             JCheckBox checkBox = new JCheckBox(tipo);
             JTextField comentarioField = new JTextField(20);
             comentarioField.setEnabled(false);
             
-            // ** Aplicar Borde y Padding Interno a JTextField **
             comentarioField.setBorder(BorderFactory.createCompoundBorder(fieldLineBorder, fieldPadding));
 
-
-            // Habilita/Deshabilita el comentario según el estado del checkbox
             checkBox.addActionListener(ev -> comentarioField.setEnabled(checkBox.isSelected()));
 
-            // Restaurar estado si es un reintento
             for (String[] motivo : motivosReintento) {
                 if (motivo[0].equals(tipo)) {
                     checkBox.setSelected(true);
@@ -439,7 +565,6 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
             motivoCheckBoxes.put(tipo, checkBox);
             comentarioTextFields.put(tipo, comentarioField);
 
-            // Añadir al panel de motivos (usando wrap para el salto de línea después del textfield)
             motivosPanel.add(checkBox);
             motivosPanel.add(new JLabel(LABEL_COMENTARIO));
             motivosPanel.add(comentarioField, "wrap");
@@ -455,7 +580,6 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         confirmarMotivosBtn.setEnabled(false);
         List<String[]> motivosSeleccionados = new ArrayList<>();
 
-        // Recolectamos la información actual de la UI (para validar y/o guardar en caso de error)
         for (Map.Entry<String, JCheckBox> entry : motivoCheckBoxes.entrySet()) {
             if (entry.getValue().isSelected()) {
                 String motivoTipo = entry.getKey();
@@ -464,18 +588,14 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
             }
         }
 
-        // Guardamos el estado actual por si hay que reintentar
         motivosPendientesReintento = motivosSeleccionados;
 
         gestor.tomarMotivosFueraDeServicio(motivosSeleccionados);
-
-        // La habilitación/deshabilitación final se hace en los métodos OK/Error
     }
 
     public void motivosFueraDeServicioOK() {
         confirmarMotivosBtn.setEnabled(false);
         esperandoReintento = false;
-        motivosPendientesReintento = null;
     }
 
     public void solicitarConfirmacionCierreOrden() {
@@ -485,7 +605,6 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
         confirmarCierreBtn.setEnabled(true);
         cancelarCierreBtn.setEnabled(true);
 
-        // Deshabilitamos componentes de las vistas anteriores (solo si el gestor nos llevó a confirmación)
         ordenesTable.setEnabled(false);
         observacionTextArea.setEnabled(false);
         fueraServicioCheckBox.setEnabled(false);
@@ -501,13 +620,11 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
 
         if (confirmacionCierreOrden) {
             if (confirmacionFinal) {
-                // Flujo Exitoso
                 confirmarCierreBtn.setVisible(false);
                 cancelarCierreBtn.setVisible(false);
                 cardLayout.show(mainPanel, "cierreExitoso");
             } else {
-                // Cancelación
-                opcionCerrarOrdenDeInspeccion(); // Reiniciar el proceso
+                opcionCerrarOrdenDeInspeccion(); // Cancelación
             }
         } else {
             // Manejo de Reintento y Error
@@ -517,12 +634,12 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
                 // Error en Observación
                 cardLayout.show(mainPanel, "observacion");
                 JOptionPane.showMessageDialog(this, MENSAJE_ERROR_OBSERVACION, "Error de Observación", JOptionPane.ERROR_MESSAGE);
-                solicitarObservacionCierreOrden(); // Recarga con datos pendientes
+                solicitarObservacionCierreOrden(); 
 
             } else if (gestor.esPonerSismografoFueraDeServicio() && (!gestor.esValidacionComentariosMotivosOk() || !gestor.esValidacionSelecMotivoOk())) {
                 // Error en Motivos
                 cardLayout.show(mainPanel, "motivos");
-                solicitarMotivosFueraDeServicio(motivosTipoFueraServicio); // Recarga con datos pendientes
+                solicitarMotivosFueraDeServicio(motivosTipoFueraServicio); 
 
                 if (!gestor.esValidacionComentariosMotivosOk()) {
                     JOptionPane.showMessageDialog(this, MENSAJE_ERROR_COMENTARIOS, "Error de Comentarios", JOptionPane.ERROR_MESSAGE);
@@ -530,24 +647,26 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
                     JOptionPane.showMessageDialog(this, MENSAJE_ERROR_SELECCION_MOTIVO, "Error de Motivos", JOptionPane.ERROR_MESSAGE);
                 }
                 
-                // Los botones deben volver a habilitarse aquí para permitir el reintento
                 confirmarMotivosBtn.setEnabled(true); 
                 
             } else {
                 // Error genérico o desconocido
                 JOptionPane.showMessageDialog(this, MENSAJE_ERROR_CONFIRMACION, "Error en Cierre", JOptionPane.ERROR_MESSAGE);
                 cardLayout.show(mainPanel, "confirmacion");
-                confirmarCierreBtn.setEnabled(true); // Se vuelven a habilitar los botones de confirmación
+                confirmarCierreBtn.setEnabled(true); 
                 cancelarCierreBtn.setEnabled(true);
             }
         }
     }
 
     private void volverInicioClick() {
+        volverInicioBtn.setEnabled(false); 
         gestor.nuevoCierreOrdenInspeccion();
+        revalidate();
+        repaint();
     }
 
-    public void mostrarMensaje(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje);
+    public void mostrarMensaje(String mensaje, String titulo) {
+        JOptionPane.showMessageDialog(this, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
     }
 }

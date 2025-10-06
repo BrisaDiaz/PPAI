@@ -11,7 +11,8 @@ package com.mycompany.ppai.controllers;
  import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
 
  import java.time.LocalDateTime;
- import java.util.Objects;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
  import java.util.List;
 
  import com.google.gson.JsonObject;
@@ -186,26 +187,22 @@ import jakarta.persistence.EntityManager;
              }
              this.cerrarOrdenDeInspeccion();
 
-             String mensajeCierre = "Orden de inspección cerrada.";
-
              if (!this.ponerSismografoFueraServicio) {
                 // Método para poner el sismógrafo online (A2)
                 this.actualizarSismografoAOnline();
-                 mensajeCierre += " El sismógrafo se mantiene online.";
+
              } else {
                  this.actualizarSismografoAFueraDeServicio();
-                 mensajeCierre += " El sismógrafo fué puesto fuera de servicio.";
+
              }
 
              orderRepository.guardar(this.selecOrdenInspeccion);
-             
-             this.pantallaCierreOrdenInspeccion.mostrarMensaje(mensajeCierre);
 
              this.finCU();
+    
              return true;
          } else {
              // Método para cancelar el cierre de la orden de inspección (A7)
-             this.pantallaCierreOrdenInspeccion.mostrarMensaje("Cierre de orden cancelado.");
              this.finCU();
              return true;
          }
@@ -271,21 +268,29 @@ import jakarta.persistence.EntityManager;
          List<Sismografo> todosLosSismografos = sismografoRepository.obtenerTodos();
          this.selecOrdenInspeccion.actualizarSismografoFueraServicio(this.fechaHoraActual, this.empleadoLogeado,
                  estadoFueraServicio, this.motivosFueraServicio, todosLosSismografos);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+        String fechaHoraFormateada = this.fechaHoraActual.format(formatter);
  
-        String plantilla = 
-            "Se ha cerrado la orden de inspección número %d.\n" +
-            "Sismógrafo %s actualizado al estado: **%s**.\n" +
-            "Fecha y Hora de Cierre: %s.\n" +
-            "Motivos del Cierre:\n%s";
+        String plantilla = "<html>" +
+            "Se ha cerrado la orden de inspección número %d.<br>" + 
+            "El sismógrafo %s se ha actualizado al estado %s.<br>" +
+            "Fecha y hora de cierre: %s.<br>" + 
+            "<br>" +
+                "Motivos del Cierre:<br>%s" +
+            "<br>" +
+            "</html>"; 
+            
          String cuerpoNotificacion = String.format(plantilla, 
                 this.selecOrdenInspeccion.getNumeroOrden(),
                 this.selecOrdenInspeccion.mostrarDatosOrdeneDeInspeccion(todosLosSismografos).get("identificadorSismografo").getAsString(),
                 nombreEstadoFueraServicio,
-                this.fechaHoraActual,
+                fechaHoraFormateada,
                 this.obtenerDescripcionMotivos()
                 );
  
-         this.pantallaCierreOrdenInspeccion.mostrarMensaje("Notificación enviada:\n" + cuerpoNotificacion);
+         this.pantallaCierreOrdenInspeccion.mostrarMensaje(cuerpoNotificacion, "Notificación");
  
          this.notificarResponsablesDeReparacion(cuerpoNotificacion);
          this.publicarEnMonitoresCCRS(cuerpoNotificacion);
