@@ -45,10 +45,6 @@ public class CambioEstado {
     @JoinColumn(name = "responsable_id", nullable=false)
     private Empleado responsableDeInspeccion;
 
-    @ManyToOne
-    @JoinColumn(name = "sismografo_id", nullable=false)
-    private Sismografo sismografo;
-
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(
         name = "cambio_estado_motivo",
@@ -60,16 +56,15 @@ public class CambioEstado {
     private LocalDateTime fechaHoraFin;
 
     // Constructor para un CambioEstado general.
-    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, Sismografo sismografo) {
+    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion) {
       this.estado = estado;
       this.fechaHoraInicio = fechaHoraInicio;
       this.responsableDeInspeccion = responsableDeInspeccion;
-      this.sismografo = sismografo;
     }
 
     // Constructor para un CambioEstado cuando el sismógrafo se pone Fuera de Servicio.
-    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, Sismografo sismografo, List<Object[]> motivosFueraServicio) {
-      this(estado, fechaHoraInicio, responsableDeInspeccion, sismografo); // Llamar al constructor general
+    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
+      this(estado, fechaHoraInicio, responsableDeInspeccion); // Llamar al constructor general
       this.crearMotivosFueraDeServicio(motivosFueraServicio);
     }
 

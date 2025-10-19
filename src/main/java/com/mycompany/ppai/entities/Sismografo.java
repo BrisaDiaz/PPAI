@@ -30,7 +30,8 @@ public class Sismografo {
     @JoinColumn(name = "estacion_sismologica_id", nullable=false)
     private EstacionSismologica estacionSismologica;
 
-    @OneToMany(mappedBy = "sismografo", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany
+    @JoinColumn(name = "sismografo_id")
     private List<CambioEstado> cambioEstado;
 
     @ManyToOne
@@ -46,8 +47,7 @@ public class Sismografo {
         this.estacionSismologica = estacionSismologica;
         this.estadoActual = estadoInicial;
         this.cambioEstado = new ArrayList<>();
-        CambioEstado cambioEstadoInicial = new CambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion,
-                this, null);
+        CambioEstado cambioEstadoInicial = new CambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion,null);
         this.cambioEstado.add(cambioEstadoInicial);
     }
 
@@ -97,7 +97,7 @@ public class Sismografo {
         // Si es el estado inicial o si el nuevo estado es diferente al actual
         if (nuevoEstado != null && (this.estadoActual == null || !nuevoEstado.equals(this.estadoActual))) {
             CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion,
-                    this, motivosFueraServicio);
+                    motivosFueraServicio);
             addCambioEstado(nuevoCambioEstado);
             this.setEstadoActual(nuevoEstado);
         }
