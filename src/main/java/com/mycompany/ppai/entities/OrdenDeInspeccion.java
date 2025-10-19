@@ -37,7 +37,7 @@ public class OrdenDeInspeccion {
 
     @ManyToOne
     @JoinColumn(name = "estado_id", nullable=false)
-    private Estado estado;
+    private Estado estadoActual;
 
     @ManyToOne
     @JoinColumn(name = "empleado_id", nullable=false)
@@ -59,7 +59,7 @@ public class OrdenDeInspeccion {
 
         this.fechaHoraInicio = fechaHoraInicio;
         this.numeroOrden = numeroOrden;
-        this.estado = estado;
+        this.estadoActual = estado;
         this.empleado = empleado;
         this.estacionSismologica = estacionSismologica;
     }
@@ -71,7 +71,7 @@ public class OrdenDeInspeccion {
     }
 
     public boolean estoyCompletamenteRealizada() {
-        return this.estado.esCompletamenteRealizada();
+        return this.estadoActual.esCompletamenteRealizada();
     }
 
     public JsonObject mostrarDatosOrdeneDeInspeccion(List<Sismografo> sismografos) {
@@ -79,13 +79,17 @@ public class OrdenDeInspeccion {
         datos.addProperty("numeroOrden", this.getNumeroOrden());
         datos.addProperty("fechaHoraFinalizacion", this.getFechaHoraFinalizacion().toString());
         datos.addProperty("nombreEstacion", this.estacionSismologica.getNombre());
-        datos.addProperty("identificadorSismografo", this.estacionSismologica.mostrarIdentificadorSismografo(sismografos));
+        datos.addProperty("identificadorSismografo",
+        this.estacionSismologica.obtenerIdentificadorSismografo(sismografos));
 
         return datos;
     }
+    public String obtenerIdentificadorSismografo(List<Sismografo> sismografos) {
+       return this.estacionSismologica.obtenerIdentificadorSismografo(sismografos);
+    }
 
     public void cerrar(Estado estadoCerrada, String observacionCierre, LocalDateTime fechaHoraCierre) {
-        this.setEstado(estadoCerrada);
+        this.setEstadoActual(estadoCerrada);
         this.setObservacionCierre(observacionCierre);
         this.setFechaHoraCierre(fechaHoraCierre);
     }

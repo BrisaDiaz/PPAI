@@ -284,7 +284,7 @@ import jakarta.persistence.EntityManager;
             
          String cuerpoNotificacion = String.format(plantilla, 
                 this.selecOrdenInspeccion.getNumeroOrden(),
-                this.selecOrdenInspeccion.mostrarDatosOrdeneDeInspeccion(todosLosSismografos).get("identificadorSismografo").getAsString(),
+                this.selecOrdenInspeccion.obtenerIdentificadorSismografo(todosLosSismografos),
                 nombreEstadoFueraServicio,
                 fechaHoraFormateada,
                 this.obtenerDescripcionMotivos()

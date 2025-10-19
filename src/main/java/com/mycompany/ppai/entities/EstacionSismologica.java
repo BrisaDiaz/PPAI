@@ -49,7 +49,7 @@ public class EstacionSismologica {
 
     // Métodos de comportamiento
 
-    public String mostrarIdentificadorSismografo(List<Sismografo> sismografos) {
+    public String obtenerIdentificadorSismografo(List<Sismografo> sismografos) {
         for (Sismografo sismografo : sismografos) {
             if (sismografo.esMiEstacion(this)) {
                 return sismografo.getIdentificadorSismografo();

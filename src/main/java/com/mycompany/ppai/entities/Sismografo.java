@@ -30,7 +30,7 @@ public class Sismografo {
     @JoinColumn(name = "estacion_sismologica_id", nullable=false)
     private EstacionSismologica estacionSismologica;
 
-    @OneToMany(mappedBy = "sismografo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "sismografo", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CambioEstado> cambioEstado;
 
     @ManyToOne
@@ -44,10 +44,11 @@ public class Sismografo {
         this.identificadorSismografo = identificadorSismografo;
         this.nroSerie = nroSerie;
         this.estacionSismologica = estacionSismologica;
-        this.cambioEstado = new ArrayList<>();
         this.estadoActual = estadoInicial;
-
-        this.crearCambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion, null);
+        this.cambioEstado = new ArrayList<>();
+        CambioEstado cambioEstadoInicial = new CambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion,
+                this, null);
+        this.cambioEstado.add(cambioEstadoInicial);
     }
 
     // Métodos de comportamiento
@@ -80,11 +81,14 @@ public class Sismografo {
         }
 
         if (cambioEstadoActual == null) {
-            System.err.println("Advertencia: No se encontró un cambio de estado actual sin fecha de fin.");
-            return;
+            throw new IllegalStateException("No se encontró un cambio de estado actual sin fecha de fin.");
         }
 
         cambioEstadoActual.setFechaHoraFin(fechaHoraFin);
+    }
+
+    public void addCambioEstado(CambioEstado cambioEstado) {
+        this.cambioEstado.add(cambioEstado);
     }
 
     public void crearCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual,
@@ -92,9 +96,9 @@ public class Sismografo {
 
         // Si es el estado inicial o si el nuevo estado es diferente al actual
         if (nuevoEstado != null && (this.estadoActual == null || !nuevoEstado.equals(this.estadoActual))) {
-            CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion, this, motivosFueraServicio);
-
-            this.cambioEstado.add(nuevoCambioEstado);
+            CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion,
+                    this, motivosFueraServicio);
+            addCambioEstado(nuevoCambioEstado);
             this.setEstadoActual(nuevoEstado);
         }
     }
