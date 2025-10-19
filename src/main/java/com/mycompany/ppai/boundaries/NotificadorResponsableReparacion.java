@@ -3,12 +3,12 @@ package com.mycompany.ppai.boundaries;
 import java.util.List;
 import java.util.Objects;
 
-public class InterfazNotificacion {
+public class NotificadorResponsableReparacion {
 
     private String cuerpoNotificacion;
 
     // Constructor
-    public InterfazNotificacion() {
+    public NotificadorResponsableReparacion() {
         // Inicialización si es necesario
     }
 

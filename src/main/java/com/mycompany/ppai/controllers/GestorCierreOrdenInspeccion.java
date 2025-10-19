@@ -6,7 +6,7 @@ package com.mycompany.ppai.controllers;
  import com.mycompany.ppai.entities.MotivoTipo;
  import com.mycompany.ppai.entities.Estado;
  import com.mycompany.ppai.entities.Sismografo;
- import com.mycompany.ppai.boundaries.InterfazNotificacion;
+ import com.mycompany.ppai.boundaries.NotificadorResponsableReparacion;
  import com.mycompany.ppai.boundaries.MonitorCCRS;
  import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
 
@@ -30,7 +30,7 @@ import jakarta.persistence.EntityManager;
      private OrdenDeInspeccion selecOrdenInspeccion;
      private String observacionCierreOrden;
      private PantallaCierreOrdenInspeccion pantallaCierreOrdenInspeccion;
-     private InterfazNotificacion interfazNotificacion;
+     private NotificadorResponsableReparacion notificadorResponsableReparacion;
      private MonitorCCRS monitorCCRS;
      private Sesion sesionActual;
      private Empleado empleadoLogeado;
@@ -48,12 +48,12 @@ import jakarta.persistence.EntityManager;
      private boolean validacionComentariosMotivosOk;
  
      // Constructor
-     public GestorCierreOrdenInspeccion(Sesion sesionActual, InterfazNotificacion interfazNotificacion,
+     public GestorCierreOrdenInspeccion(Sesion sesionActual, NotificadorResponsableReparacion notificadorResponsableReparacion,
              MonitorCCRS monitorCCRS, EstadoRepository estadoRepository, OrdenDeInspeccionRepository orderRepository, 
              SismografoRepository sismografoRepository, EmpleadoRepository empleadoRepository,
              MotivoTipoRespository motivoTipoRepository) {
          
-         this.interfazNotificacion = interfazNotificacion;
+         this.notificadorResponsableReparacion = notificadorResponsableReparacion;
          this.monitorCCRS = monitorCCRS;
          this.sesionActual = sesionActual;
          this.motivosFueraServicio = new ArrayList<>();
@@ -323,17 +323,23 @@ import jakarta.persistence.EntityManager;
      }
  
      public void notificarResponsablesDeReparacion(String cuerpoNotificacion) {
+         List<String> mailsResponsables = obtenerMailsResponsablesDeReparacion();
+         notificadorResponsableReparacion.enviarNotificacion(mailsResponsables, cuerpoNotificacion);
+     }
+     
+     
+     public List<String> obtenerMailsResponsablesDeReparacion() {
          List<Empleado> todosLosEmpleados = empleadoRepository.obtenerTodos();
          List<String> mailsResponsables = new ArrayList<>();
- 
+
          for (Empleado empleado : todosLosEmpleados) {
              if (empleado.esResponsableDeReparacion()) {
                  mailsResponsables.add(empleado.getMail());
              }
          }
-         interfazNotificacion.enviarNotificacion(mailsResponsables, cuerpoNotificacion);
+         return mailsResponsables;
      }
- 
+
      public void publicarEnMonitoresCCRS(String cuerpoNotificacion) {
         monitorCCRS.publicar(cuerpoNotificacion);
      }

@@ -2,7 +2,7 @@ package com.mycompany.ppai;
 
 import com.mycompany.ppai.entities.*;
 import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
-import com.mycompany.ppai.boundaries.InterfazNotificacion;
+import com.mycompany.ppai.boundaries.NotificadorResponsableReparacion;
 import com.mycompany.ppai.boundaries.MonitorCCRS;
 import com.mycompany.ppai.repositories.*;
 import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
@@ -179,10 +179,10 @@ public class PPAI {
             MonitorCCRS monitor = new MonitorCCRS();
 
             // Crear Interfaz de Notificación
-            InterfazNotificacion interfazNotificacion = new InterfazNotificacion();
+            NotificadorResponsableReparacion notificadorResponsableReparacion = new NotificadorResponsableReparacion();
 
             // Crear Gestor y Pantalla (Inyección manual)
-            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, interfazNotificacion, monitor,
+            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, notificadorResponsableReparacion, monitor,
                                         estadoRepository, orderRepository, sismografoRepository, empleadoRepository,
                                         motivoTipoRepository);
             
