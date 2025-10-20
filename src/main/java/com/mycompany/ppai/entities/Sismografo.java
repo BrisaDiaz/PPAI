@@ -47,7 +47,7 @@ public class Sismografo {
         this.estacionSismologica = estacionSismologica;
         this.estadoActual = estadoInicial;
         this.cambioEstado = new ArrayList<>();
-        CambioEstado cambioEstadoInicial = new CambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion,null);
+        CambioEstado cambioEstadoInicial = new CambioEstado(estadoInicial, fechaHoraActual, responsableDeInspeccion,null, null);
         this.cambioEstado.add(cambioEstadoInicial);
     }
 
@@ -58,16 +58,16 @@ public class Sismografo {
     }
 
     public void retirarDeServicio(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
-        Estado estadoFueraServicio, List<Object[]> motivosFueraServicio) {
+        Estado estadoFueraServicio, List<MotivoTipo> motivosFueraServicio, List<String> comentariosFueraServicio) {
 
         this.finalizarCambioEstadoActual(fechaHoraActual);
-        this.crearCambioEstado(estadoFueraServicio, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio);
+        this.crearCambioEstado(estadoFueraServicio, fechaHoraActual, responsableDeInspeccion, motivosFueraServicio, comentariosFueraServicio);
     }
 
     public void ponerOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion, Estado estadoOnline) {
 
         this.finalizarCambioEstadoActual(fechaHoraActual);
-        this.crearCambioEstado(estadoOnline, fechaHoraActual, responsableDeInspeccion, new ArrayList<>()); // Pasamos null para motivos
+        this.crearCambioEstado(estadoOnline, fechaHoraActual, responsableDeInspeccion, new ArrayList<>(), new ArrayList<>()); // Pasamos null para motivos
     }
 
     public void finalizarCambioEstadoActual(LocalDateTime fechaHoraFin) {
@@ -92,12 +92,12 @@ public class Sismografo {
     }
 
     public void crearCambioEstado(Estado nuevoEstado, LocalDateTime fechaHoraActual,
-            Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
+            Empleado responsableDeInspeccion, List<MotivoTipo> motivosFueraServicio, List<String> comentariosFueraServicio) {
 
         // Si es el estado inicial o si el nuevo estado es diferente al actual
         if (nuevoEstado != null && (this.estadoActual == null || !nuevoEstado.equals(this.estadoActual))) {
             CambioEstado nuevoCambioEstado = new CambioEstado(nuevoEstado, fechaHoraActual, responsableDeInspeccion,
-                    motivosFueraServicio);
+                    motivosFueraServicio, comentariosFueraServicio);
             addCambioEstado(nuevoCambioEstado);
             this.setEstadoActual(nuevoEstado);
         }

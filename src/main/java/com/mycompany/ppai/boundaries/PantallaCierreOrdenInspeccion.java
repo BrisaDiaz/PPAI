@@ -450,8 +450,7 @@ public class PantallaCierreOrdenInspeccion extends JFrame {
             cardLayout.show(mainPanel, "sinOrdenes");
         } else {
             DateTimeFormatter targetFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS",
-                    Locale.ROOT);
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
             for (JsonObject info : infoOrdenesInspeccion) {
                 int numeroOrden = info.get("numeroOrden").getAsInt();

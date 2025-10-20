@@ -59,11 +59,11 @@ public class EstacionSismologica {
     }
 
     public void actualizarSismografoFueraServicio(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
-    Estado estadoFueraServicio, List<Object[]> motivosFueraServicio, List<Sismografo> sismografos) {
+    Estado estadoFueraServicio, List<MotivoTipo> motivosFueraServicio, List<String> comentariosFueraServicio, List<Sismografo> sismografos) {
 
         for (Sismografo sismografo : sismografos) {
             if (sismografo.esMiEstacion(this)) {
-                sismografo.retirarDeServicio(fechaHoraActual, responsableDeInspeccion,estadoFueraServicio, motivosFueraServicio);
+                sismografo.retirarDeServicio(fechaHoraActual, responsableDeInspeccion,estadoFueraServicio, motivosFueraServicio, comentariosFueraServicio);
                 break;
             }
         }

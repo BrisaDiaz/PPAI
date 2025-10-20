@@ -35,7 +35,8 @@ import jakarta.persistence.EntityManager;
      private Sesion sesionActual;
      private Empleado empleadoLogeado;
      private boolean ponerSismografoFueraServicio;
-     private List<Object[]> motivosFueraServicio;
+     private List<String> comentariosMotivosFueraServicio;
+     private List<MotivoTipo> selectMotivosFueraServicio;
      private static EstadoRepository estadoRepository;
      private static OrdenDeInspeccionRepository orderRepository;
      private static SismografoRepository sismografoRepository;
@@ -56,7 +57,8 @@ import jakarta.persistence.EntityManager;
          this.notificadorResponsableReparacion = notificadorResponsableReparacion;
          this.monitorCCRS = monitorCCRS;
          this.sesionActual = sesionActual;
-         this.motivosFueraServicio = new ArrayList<>();
+         this.selectMotivosFueraServicio = new ArrayList<>();
+         this.comentariosMotivosFueraServicio = new ArrayList<>();
          this.ponerSismografoFueraServicio = false;
          this.validacionObservacionOk = false;
          this.validacionSelecMotivoOk = false;
@@ -153,14 +155,17 @@ import jakarta.persistence.EntityManager;
       * [Descripción del MotivoTipo, Comentario].
       */
      public void tomarMotivosFueraDeServicio(List<String[]> motivosSeleccionados) {
-         this.motivosFueraServicio.clear();
+         this.selectMotivosFueraServicio.clear();
+         this.comentariosMotivosFueraServicio.clear();
+
          if (motivosSeleccionados != null) {
              for (String[] motivo : motivosSeleccionados) {
                  String motivoTipoDescripcion = motivo[0];
-                 String motivoDescripcion = motivo[1];
+                 String motivoComentario = motivo[1];
                  MotivoTipo motivoTipo = motivoTipoRepository.obtenerPorDescripcion(motivoTipoDescripcion);
                  if (motivoTipo != null) {
-                     this.motivosFueraServicio.add(new Object[]{motivoTipo, motivoDescripcion});
+                     this.selectMotivosFueraServicio.add(motivoTipo);
+                     this.comentariosMotivosFueraServicio.add(motivoComentario);
                  }
              }
          }
@@ -217,12 +222,12 @@ import jakarta.persistence.EntityManager;
      }
  
      public void validarSelecMotivoFueraDeServicio() {
-         if (this.motivosFueraServicio != null && !this.motivosFueraServicio.isEmpty()) {
+         if (this.comentariosMotivosFueraServicio != null && !this.comentariosMotivosFueraServicio.isEmpty() &&
+         this.selectMotivosFueraServicio.size() == this.comentariosMotivosFueraServicio.size()) {
              this.validacionSelecMotivoOk = true;
             boolean comentariosOk = true;
-            for (Object[] motivo : this.motivosFueraServicio) {
-                String motivoDescripcion = (String) motivo[1];
-                if (motivoDescripcion == null || motivoDescripcion.trim().isEmpty()) {
+            for (String motivoComentario : this.comentariosMotivosFueraServicio) {
+                if (motivoComentario == null || motivoComentario.trim().isEmpty()) {
                     comentariosOk = false;
                     break;
                 }
@@ -267,7 +272,7 @@ import jakarta.persistence.EntityManager;
          }
          List<Sismografo> todosLosSismografos = sismografoRepository.obtenerTodos();
          this.selecOrdenInspeccion.actualizarSismografoFueraServicio(this.fechaHoraActual, this.empleadoLogeado,
-                 estadoFueraServicio, this.motivosFueraServicio, todosLosSismografos);
+                 estadoFueraServicio, this.selectMotivosFueraServicio, this.comentariosMotivosFueraServicio, todosLosSismografos);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
@@ -314,9 +319,9 @@ import jakarta.persistence.EntityManager;
      private String obtenerDescripcionMotivos() {
 
          StringBuilder descripcionMotivos = new StringBuilder();
-         for (Object[] motivo : this.motivosFueraServicio) {
-             MotivoTipo motivoTipo = (MotivoTipo) motivo[0];
-             String comentario = (String) motivo[1];
+         for (int i = 0; i < this.selectMotivosFueraServicio.size(); i++) {
+             MotivoTipo motivoTipo = this.selectMotivosFueraServicio.get(i);
+             String comentario = this.comentariosMotivosFueraServicio.get(i);
              descripcionMotivos.append("- ").append(motivoTipo.getDescripcion()).append(": ").append(comentario).append("\n");
          }
          return descripcionMotivos.toString();

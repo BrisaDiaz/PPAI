@@ -63,23 +63,23 @@ public class CambioEstado {
     }
 
     // Constructor para un CambioEstado cuando el sismógrafo se pone Fuera de Servicio.
-    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion, List<Object[]> motivosFueraServicio) {
+    public CambioEstado(Estado estado, LocalDateTime fechaHoraInicio, Empleado responsableDeInspeccion,
+        List<MotivoTipo> motivosFueraServicio, List<String> comentariosFueraServicio) {
       this(estado, fechaHoraInicio, responsableDeInspeccion); // Llamar al constructor general
-      this.crearMotivosFueraDeServicio(motivosFueraServicio);
+      this.crearMotivosFueraDeServicio(motivosFueraServicio, comentariosFueraServicio);
     }
 
 
     // Métodos de comportamiento
 
-    public void crearMotivosFueraDeServicio(List<Object[]> motivosFueraServicio) {
+    public void crearMotivosFueraDeServicio(List<MotivoTipo> motivosFueraServicio, List<String> comentariosFueraServicio) {
       this.motivoFueraServicio = new ArrayList<>();
 
       if (motivosFueraServicio != null) {
 
-        for (Object[] motivoData : motivosFueraServicio) {
-          MotivoTipo tipo = (MotivoTipo) motivoData[0];
-          String comentario = (String) motivoData[1];
-
+        for (int i = 0; i < motivosFueraServicio.size(); i++) {
+          MotivoTipo tipo = motivosFueraServicio.get(i);
+          String comentario = comentariosFueraServicio.get(i);
           MotivoFueraServicio motivo = new MotivoFueraServicio(null, comentario, tipo);
           this.motivoFueraServicio.add(motivo);
         }

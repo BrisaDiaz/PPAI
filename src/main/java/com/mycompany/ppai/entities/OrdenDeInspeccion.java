@@ -95,13 +95,13 @@ public class OrdenDeInspeccion {
     }
 
     public void actualizarSismografoFueraServicio(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
-    Estado estadoFueraServicio, List<Object[]> motivosFueraServicio,  List<Sismografo> sismografos) {
-        this.getEstacionSismologica().actualizarSismografoFueraServicio(fechaHoraActual, responsableDeInspeccion, estadoFueraServicio, motivosFueraServicio, sismografos);
+    Estado estadoFueraServicio, List<MotivoTipo> motivosFueraServicio,  List<String> comentariosFueraServicio,  List<Sismografo> sismografos) {
+        this.estacionSismologica.actualizarSismografoFueraServicio(fechaHoraActual, responsableDeInspeccion, estadoFueraServicio, motivosFueraServicio, comentariosFueraServicio, sismografos);
 
     }
 
     public void actualizarSismografoOnline(LocalDateTime fechaHoraActual, Empleado responsableDeInspeccion,
     Estado estadoOnline, List<Sismografo> sismografos) {
-        this.getEstacionSismologica().actualizarSismografoOnline(fechaHoraActual, responsableDeInspeccion, estadoOnline, sismografos);
+        this.estacionSismologica.actualizarSismografoOnline(fechaHoraActual, responsableDeInspeccion, estadoOnline, sismografos);
     }
 }
