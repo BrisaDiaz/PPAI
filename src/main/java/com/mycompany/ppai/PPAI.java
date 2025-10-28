@@ -178,11 +178,8 @@ public class PPAI {
             // Crear Monitores CCRS
             MonitorCCRS monitor = new MonitorCCRS();
 
-            // Crear Interfaz de Notificación
-            NotificadorResponsableReparacion notificadorResponsableReparacion = new NotificadorResponsableReparacion();
-
             // Crear Gestor y Pantalla (Inyección manual)
-            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, notificadorResponsableReparacion, monitor,
+            GestorCierreOrdenInspeccion gestor = new GestorCierreOrdenInspeccion(sesion, monitor,
                                         estadoRepository, orderRepository, sismografoRepository, empleadoRepository,
                                         motivoTipoRepository);
             

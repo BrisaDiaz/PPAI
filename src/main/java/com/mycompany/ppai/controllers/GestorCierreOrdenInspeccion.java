@@ -7,11 +7,11 @@ package com.mycompany.ppai.controllers;
  import com.mycompany.ppai.entities.Estado;
  import com.mycompany.ppai.entities.Sismografo;
  import com.mycompany.ppai.boundaries.NotificadorResponsableReparacion;
+ import com.mycompany.ppai.boundaries.IObservadorSismografo;
  import com.mycompany.ppai.boundaries.MonitorCCRS;
  import com.mycompany.ppai.boundaries.PantallaCierreOrdenInspeccion;
 
  import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
  import java.util.List;
 
@@ -22,26 +22,28 @@ import java.util.Objects;
 
  import com.mycompany.ppai.repositories.*;
 
-import jakarta.persistence.EntityManager;
 
-
- public class GestorCierreOrdenInspeccion {
+public class GestorCierreOrdenInspeccion implements ISujetoSismografo {
      private LocalDateTime fechaHoraActual;
      private OrdenDeInspeccion selecOrdenInspeccion;
      private String observacionCierreOrden;
      private PantallaCierreOrdenInspeccion pantallaCierreOrdenInspeccion;
-     private NotificadorResponsableReparacion notificadorResponsableReparacion;
      private MonitorCCRS monitorCCRS;
      private Sesion sesionActual;
      private Empleado empleadoLogeado;
      private boolean ponerSismografoFueraServicio;
      private List<String> comentariosMotivosFueraServicio;
      private List<MotivoTipo> selectMotivosFueraServicio;
+     private String nombreNuevoEstadoSismografo;
+     private String identificadorSismografo;
      private static EstadoRepository estadoRepository;
      private static OrdenDeInspeccionRepository orderRepository;
      private static SismografoRepository sismografoRepository;
      private static EmpleadoRepository empleadoRepository;
      private static MotivoTipoRespository motivoTipoRepository;
+
+     // Lista de observadores
+     private List<IObservadorSismografo> observadores = new ArrayList<>();
 
      /// atributos de validación
      private boolean validacionObservacionOk;
@@ -49,12 +51,11 @@ import jakarta.persistence.EntityManager;
      private boolean validacionComentariosMotivosOk;
  
      // Constructor
-     public GestorCierreOrdenInspeccion(Sesion sesionActual, NotificadorResponsableReparacion notificadorResponsableReparacion,
+     public GestorCierreOrdenInspeccion(Sesion sesionActual,
              MonitorCCRS monitorCCRS, EstadoRepository estadoRepository, OrdenDeInspeccionRepository orderRepository, 
              SismografoRepository sismografoRepository, EmpleadoRepository empleadoRepository,
              MotivoTipoRespository motivoTipoRepository) {
-         
-         this.notificadorResponsableReparacion = notificadorResponsableReparacion;
+
          this.monitorCCRS = monitorCCRS;
          this.sesionActual = sesionActual;
          this.selectMotivosFueraServicio = new ArrayList<>();
@@ -68,6 +69,23 @@ import jakarta.persistence.EntityManager;
          this.sismografoRepository = sismografoRepository;
          this.empleadoRepository = empleadoRepository;
          this.motivoTipoRepository = motivoTipoRepository;
+     }
+     
+     public void subscribir(List<IObservadorSismografo> observador) {
+         this.observadores = observador;
+     }
+
+     public void quitar(IObservadorSismografo observador) {
+         this.observadores.remove(observador);
+     }
+
+     public void notificar() {
+         for (IObservadorSismografo observador : observadores) {
+             observador.actualizar(this.identificadorSismografo, this.fechaHoraActual,
+                     this.nombreNuevoEstadoSismografo,
+                     selectMotivosFueraServicio.stream().map(MotivoTipo::getDescripcion).collect(Collectors.toList()),
+                     this.comentariosMotivosFueraServicio);
+         }
      }
  
      public boolean esPonerSismografoFueraDeServicio() {
@@ -136,13 +154,13 @@ import jakarta.persistence.EntityManager;
          this.validacionObservacionOk = true; // Asumimos que la observación ingresada es válida inicialmente
 
          if (this.ponerSismografoFueraServicio) {
-            List<String> tiposMotivoFueraDeServicio = mostrarTiposMotivoFueraDeServicio();
-            this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicio);
+             List<String> tiposMotivoFueraDeServicio = mostrarTiposMotivoFueraDeServicio();
+             this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicio);
          } else {
              this.pantallaCierreOrdenInspeccion.solicitarConfirmacionCierreOrden();
          }
      }
- 
+     
      public List<String> mostrarTiposMotivoFueraDeServicio() {
          List<MotivoTipo> todosMotivoTipo = motivoTipoRepository.obtenerTodos();
          return todosMotivoTipo.stream().map(MotivoTipo::getDescripcion).collect(Collectors.toList());
@@ -154,12 +172,12 @@ import jakarta.persistence.EntityManager;
       * @param motivosSeleccionados Lista de arreglos de String, donde cada arreglo contiene
       * [Descripción del MotivoTipo, Comentario].
       */
-     public void tomarMotivosFueraDeServicio(List<String[]> motivosSeleccionados) {
+     public void tomarMotivosFueraDeServicio(List<String[]> motivosYComentarios) {
          this.selectMotivosFueraServicio.clear();
          this.comentariosMotivosFueraServicio.clear();
 
-         if (motivosSeleccionados != null) {
-             for (String[] motivo : motivosSeleccionados) {
+         if (motivosYComentarios != null) {
+             for (String[] motivo : motivosYComentarios) {
                  String motivoTipoDescripcion = motivo[0];
                  String motivoComentario = motivo[1];
                  MotivoTipo motivoTipo = motivoTipoRepository.obtenerPorDescripcion(motivoTipoDescripcion);
@@ -171,7 +189,7 @@ import jakarta.persistence.EntityManager;
          }
          this.pantallaCierreOrdenInspeccion.solicitarConfirmacionCierreOrden();
      }
- 
+
      public boolean tomarConfirmacionCierreOrden(boolean confirmacion) {
          if (confirmacion) {
                 // Validar la observación de cierre de orden (A3)
@@ -185,20 +203,21 @@ import jakarta.persistence.EntityManager;
                  boolean validacionesMotivoOk = this.validacionSelecMotivoOk && this.validacionComentariosMotivosOk;
 
                  if (!validacionesMotivoOk) {
-                    List<String> tiposMotivoFueraDeServicio = mostrarTiposMotivoFueraDeServicio();
-                    this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicio);
-                    return false;
+                     List<String> tiposMotivoFueraDeServicio = mostrarTiposMotivoFueraDeServicio();
+                     this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicio);
+                     return false;
                  }
              }
+             // Método para cerrar la orden de inspección
              this.cerrarOrdenDeInspeccion();
 
+             // Actualizar el estado del sismógrafo asociado
              if (!this.ponerSismografoFueraServicio) {
                 // Método para poner el sismógrafo online (A2)
                 this.actualizarSismografoAOnline();
-
-             } else {
-                 this.actualizarSismografoAFueraDeServicio();
-
+            } else {
+                // Método para poner el sismógrafo fuera de servicio - CU
+                this.actualizarSismografoAFueraDeServicio();
              }
 
              orderRepository.guardar(this.selecOrdenInspeccion);
@@ -245,8 +264,9 @@ import jakarta.persistence.EntityManager;
      }
  
      public void cerrarOrdenDeInspeccion() {
-         this.getFechaHoraActual();
-
+        // Obtener la fecha y hora actual
+        this.getFechaHoraActual();
+         // Obtener el estado "Cerrada"
          List<Estado> todosLosEstados = estadoRepository.obtenerTodos();
          Estado estadoCerrada = null;
          for (Estado estado : todosLosEstados) {
@@ -255,50 +275,45 @@ import jakarta.persistence.EntityManager;
                  break;
              }
          }
+         // Cerrar la orden de inspección
          this.selecOrdenInspeccion.cerrar(estadoCerrada, this.observacionCierreOrden, this.fechaHoraActual);
      }
  
      public void actualizarSismografoAFueraDeServicio() {
          List<Estado> todosLosEstados = estadoRepository.obtenerTodos();
          Estado estadoFueraServicio = null;
-         String nombreEstadoFueraServicio = "";
  
          for (Estado estado : todosLosEstados) {
              if (estado.esAmbitoSismografo() && estado.esFueraDeServicio()) {
                  estadoFueraServicio = estado;
-                 nombreEstadoFueraServicio = estado.getNombreEstado().toString();
+                 this.nombreNuevoEstadoSismografo = estado.getNombreEstado().toString();
                  break;
              }
          }
          List<Sismografo> todosLosSismografos = sismografoRepository.obtenerTodos();
          this.selecOrdenInspeccion.actualizarSismografoFueraServicio(this.fechaHoraActual, this.empleadoLogeado,
-                 estadoFueraServicio, this.selectMotivosFueraServicio, this.comentariosMotivosFueraServicio, todosLosSismografos);
+                 estadoFueraServicio, this.selectMotivosFueraServicio, this.comentariosMotivosFueraServicio,
+                 todosLosSismografos);
+                 
+        // Obtener identificador del sismógrafo afectado
+        this.identificadorSismografo = this.selecOrdenInspeccion.obtenerIdentificadorSismografo(todosLosSismografos);
+ 
+        // Obtener mails de responsables de reparación
+        List<String> mailsResponsables = obtenerMailsResponsablesDeReparacion();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        // Crear notificador
+        NotificadorResponsableReparacion notificadorResponsableReparacion = new NotificadorResponsableReparacion(
+                mailsResponsables);
 
-        String fechaHoraFormateada = this.fechaHoraActual.format(formatter);
- 
-        String plantilla = "<html>" +
-            "Se ha cerrado la orden de inspección número %d.<br>" + 
-            "El sismógrafo %s se ha actualizado al estado %s.<br>" +
-            "Fecha y hora de cierre: %s.<br>" + 
-            "<br>" +
-                "Motivos del Cierre:<br>%s" +
-            "<br>" +
-            "</html>"; 
-            
-         String cuerpoNotificacion = String.format(plantilla, 
-                this.selecOrdenInspeccion.getNumeroOrden(),
-                this.selecOrdenInspeccion.obtenerIdentificadorSismografo(todosLosSismografos),
-                nombreEstadoFueraServicio,
-                fechaHoraFormateada,
-                this.obtenerDescripcionMotivos()
-                );
- 
-         this.pantallaCierreOrdenInspeccion.mostrarMensaje(cuerpoNotificacion, "Notificación");
- 
-         this.notificarResponsablesDeReparacion(cuerpoNotificacion);
-         this.publicarEnMonitoresCCRS(cuerpoNotificacion);
+        // subscribir notificador y monitor al gestor
+        List<IObservadorSismografo> observadores = new ArrayList<>();
+        observadores.add(notificadorResponsableReparacion);
+        observadores.add(this.monitorCCRS);
+
+        this.subscribir(observadores);
+
+        // Notificar cambios de estado de sismógrafos
+        this.notificar();
      }
  
      public void actualizarSismografoAOnline() {
@@ -315,24 +330,7 @@ import jakarta.persistence.EntityManager;
          this.selecOrdenInspeccion.actualizarSismografoOnline(this.fechaHoraActual, this.empleadoLogeado, estadoOnline, todosLosSismografos);
          // No se notifica ni por pantalla ni por mail
      }
- 
-     private String obtenerDescripcionMotivos() {
 
-         StringBuilder descripcionMotivos = new StringBuilder();
-         for (int i = 0; i < this.selectMotivosFueraServicio.size(); i++) {
-             MotivoTipo motivoTipo = this.selectMotivosFueraServicio.get(i);
-             String comentario = this.comentariosMotivosFueraServicio.get(i);
-             descripcionMotivos.append("- ").append(motivoTipo.getDescripcion()).append(": ").append(comentario).append("\n");
-         }
-         return descripcionMotivos.toString();
-     }
- 
-     public void notificarResponsablesDeReparacion(String cuerpoNotificacion) {
-         List<String> mailsResponsables = obtenerMailsResponsablesDeReparacion();
-         notificadorResponsableReparacion.enviarNotificacion(mailsResponsables, cuerpoNotificacion);
-     }
-     
-     
      public List<String> obtenerMailsResponsablesDeReparacion() {
          List<Empleado> todosLosEmpleados = empleadoRepository.obtenerTodos();
          List<String> mailsResponsables = new ArrayList<>();
@@ -343,10 +341,6 @@ import jakarta.persistence.EntityManager;
              }
          }
          return mailsResponsables;
-     }
-
-     public void publicarEnMonitoresCCRS(String cuerpoNotificacion) {
-        monitorCCRS.publicar(cuerpoNotificacion);
      }
  
      public void finCU() {
