@@ -1,6 +1,7 @@
 package com.mycompany.ppai;
 
 import com.mycompany.ppai.entities.*;
+import com.mycompany.ppai.lib.AppConfig;
 import com.mycompany.ppai.controllers.GestorCierreOrdenInspeccion;
 import com.mycompany.ppai.boundaries.NotificadorResponsableReparacion;
 import com.mycompany.ppai.boundaries.MonitorCCRS;
@@ -18,6 +19,7 @@ public class PPAI {
         
         EntityManager em = null;
         try {
+            AppConfig.getInstance();
         
             em = Persistence
                 .createEntityManagerFactory("sismos")
@@ -57,10 +59,10 @@ public class PPAI {
             .build();
 
             Empleado empleadoReparacion = Empleado.builder()
-            .nombre("Ana")
-            .apellido("Gómez")
+            .nombre("Brisa")
+            .apellido("Díaz")
             .telefono("987654321")
-            .mail("ana.gomez@example.com")
+            .mail("brisaabigaildiaz@gmail.com")
             .rol(rolReparacion)
             .build();
 

@@ -77,6 +77,13 @@
             <artifactId>h2</artifactId>
             <version>${h2.version}</version>
         </dependency>
+
+        <!-- Email Sending -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
         
         <!-- Testing -->
         <dependency>
@@ -84,6 +91,12 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
+        </dependency>
+ 
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>2.3.0</version> 
         </dependency>
 
     </dependencies>
