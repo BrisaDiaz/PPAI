@@ -147,23 +147,23 @@ public class PPAI {
 
             // Crear Motivos de Fuera de Servicio
             MotivoTipo motivoTipo1 = MotivoTipo.builder()
-            .descripcion("Falla de energía")
+            .descripcion("Avería por vibración")
             .build();
 
             MotivoTipo motivoTipo2 = MotivoTipo.builder()
-            .descripcion("Problema de sensor")
+            .descripcion("Desgaste de componente")
             .build();
 
             MotivoTipo motivoTipo3 = MotivoTipo.builder()
-            .descripcion("Mantenimiento programado")
+            .descripcion("“Fallo en el sistema de registro")
             .build();
 
             MotivoTipo motivoTipo4 = MotivoTipo.builder()
-            .descripcion("Daño por condiciones climáticas")
+            .descripcion("Vandalismo")
             .build();
 
             MotivoTipo motivoTipo5 = MotivoTipo.builder()
-            .descripcion("Desconexión accidental de red")
+            .descripcion("Fallo en fuente de alimentación")
             .build();
 
             motivoTipoRepository.guardarTodos(List.of(

@@ -190,48 +190,57 @@ public class GestorCierreOrdenInspeccion implements ISujetoSismografo {
          this.pantallaCierreOrdenInspeccion.solicitarConfirmacionCierreOrden();
      }
 
-     public boolean tomarConfirmacionCierreOrden(boolean confirmacion) {
-         if (confirmacion) {
-                // Validar la observación de cierre de orden (A3)
-             validarObservacionCierre();
-             if (!this.validacionObservacionOk) {
-                 this.pantallaCierreOrdenInspeccion.solicitarObservacionCierreOrden();
-                 return false;
-             }
-             if (this.ponerSismografoFueraServicio) {
-                 validarSelecMotivoFueraDeServicio();
-                 boolean validacionesMotivoOk = this.validacionSelecMotivoOk && this.validacionComentariosMotivosOk;
+    public boolean tomarConfirmacionCierreOrden(boolean confirmacion) {
+        if (confirmacion) {
+            // Validar la observación de cierre de orden (A3)
+        validarObservacionCierre();
+        if (!this.validacionObservacionOk) {
+            this.pantallaCierreOrdenInspeccion.solicitarObservacionCierreOrden();
+            return false;
+        }
+        if (this.ponerSismografoFueraServicio) {
+            validarSelecMotivoFueraDeServicio();
+            boolean validacionesMotivoOk = this.validacionSelecMotivoOk && this.validacionComentariosMotivosOk;
 
-                 if (!validacionesMotivoOk) {
-                     List<String> tiposMotivoFueraDeServicio = mostrarTiposMotivoFueraDeServicio();
-                     this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicio);
-                     return false;
-                 }
-             }
-             // Método para cerrar la orden de inspección
-             this.cerrarOrdenDeInspeccion();
+            if (!validacionesMotivoOk) {
+            List<String> tiposMotivoFueraDeServicio = mostrarTiposMotivoFueraDeServicio();
+            this.pantallaCierreOrdenInspeccion.solicitarMotivosFueraDeServicio(tiposMotivoFueraDeServicio);
+            return false;
+            }
+        }
+        // Método para cerrar la orden de inspección
+        this.cerrarOrdenDeInspeccion();
 
-             // Actualizar el estado del sismógrafo asociado
-             if (!this.ponerSismografoFueraServicio) {
-                // Método para poner el sismógrafo online (A2)
-                this.actualizarSismografoAOnline();
-            } else {
-                // Método para poner el sismógrafo fuera de servicio - CU
-                this.actualizarSismografoAFueraDeServicio();
-             }
+        // Actualizar el estado del sismógrafo asociado
+        if (!this.ponerSismografoFueraServicio) {
+            // Método para poner el sismógrafo online (A2)
+            this.actualizarSismografoAOnline();
+        } else {
+            // Método para poner el sismógrafo fuera de servicio - CU
+            this.actualizarSismografoAFueraDeServicio();
+        }
 
-             orderRepository.guardar(this.selecOrdenInspeccion);
+        orderRepository.guardar(this.selecOrdenInspeccion);
 
-             this.finCU();
+                // >>> INICIO NUEVA LÓGICA DE FEEDBACK Y LIMPIEZA
+        if (this.ponerSismografoFueraServicio) {
+            String msg = "El sismógrafo " + this.identificadorSismografo + " ha sido puesto fuera de servicio. Se notificó a los Responsables de Reparación y al Monitor CCRS.";
+            this.pantallaCierreOrdenInspeccion.mostrarMensaje(msg, "Notificación de Baja de Sismógrafo 🚨");
+        }
+        
+        this.pantallaCierreOrdenInspeccion.limpiarDatosFormulario();
+        
+        this.finCU();
     
-             return true;
-         } else {
-             // Método para cancelar el cierre de la orden de inspección (A7)
-             this.finCU();
-             return true;
-         }
-     }
- 
+        return true;
+        } else {
+        // Método para cancelar el cierre de la orden de inspección (A7)
+        this.pantallaCierreOrdenInspeccion.limpiarDatosFormulario();
+        this.finCU();
+        return true;
+        }
+    }
+    
      public void validarObservacionCierre() {
          if (this.observacionCierreOrden != null && !this.observacionCierreOrden.trim().isEmpty()) {
              this.validacionObservacionOk = true;
